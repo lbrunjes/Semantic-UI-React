@@ -1,0 +1,87 @@
+{
+  "name": "semantic-ui-react",
+  "version": "2026-10-08",
+  "description": "React components for Semantic UI.",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/es/index.js",
+  "types": "index.d.ts",
+  "unpkg": "dist/umd/semantic-ui-react.min.js",
+  "files": [
+    "src",
+    "dist",
+    "index.d.ts"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && yarn build:dist:commonjs && yarn build:dist:es && yarn build:dist:umd && yarn build:dist:esm && yarn build:dist:standalone",
+    "build:dist:commonjs": "babel src -d dist/commonjs --env-name build && node scripts/copy-typings.mjs dist/commonjs",
+    "build:dist:es": "babel src -d dist/es --env-name build-es",
+    "build:dist:esm": "vite build --config vite.bundle.config.mjs --mode esm",
+    "build:dist:standalone": "vite build --config vite.bundle.config.mjs --mode standalone",
+    "build:dist:umd": "vite build --config vite.bundle.config.mjs --mode umd",
+    "ci": "yarn tsd:test && yarn lint && yarn test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier --list-different \"**/*.{js,mjs,jsx,ts,tsx}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx}\"",
+    "test": "vitest run",
+    "test:bundles": "yarn build:dist:umd && yarn build:dist:esm && yarn build:dist:standalone && node test/bundles.mjs",
+    "test:watch": "vitest",
+    "tsd:test": "node scripts/copy-typings.mjs dist/commonjs && tsc -p ./ --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+http://127.0.0.1/semantic-ui-react.git"
+  },
+  "author": "Levi Thomason <me@levithomason.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "http://127.0.0.1/semantic-ui-react/issues"
+  },
+  "homepage": "http://127.0.0.1/semantic-ui-react#readme",
+  "dependencies": {
+    "@babel/runtime": "^8.0.7",
+    "@popperjs/core": "^2.11.8",
+    "lodash": "^4.18.1",
+    "lodash-es": "^4.18.1",
+    "prop-types": "^15.8.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^8.0.6",
+    "@babel/core": "^8.0.7",
+    "@babel/plugin-transform-runtime": "^8.0.6",
+    "@babel/preset-env": "^8.0.7",
+    "@babel/preset-react": "^8.0.1",
+    "@eslint/js": "^9.39.5",
+    "@rolldown/plugin-babel": "^0.2.4",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "babel-plugin-filter-imports": "^4.0.0",
+    "babel-plugin-lodash": "^3.3.4",
+    "babel-plugin-transform-next-use-client": "^1.1.1",
+    "babel-plugin-transform-react-handled-props": "^2.1.0",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
+    "babel-plugin-transform-rename-import": "^2.3.0",
+    "debug": "^4.4.3",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "jsdom": "^30.1.2",
+    "prettier": "^3.9.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+  }
+}
