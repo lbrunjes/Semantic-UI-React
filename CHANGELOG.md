@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased (2026-10-08)
+## 2026-10-08
 
 Removed the docs site, Gulp, Cypress, Karma and Enzyme tooling, and replaced the runtime dependencies `clsx`, `shallowequal`, `keyboard-key`, `@semantic-ui-react/event-stack`, `@fluentui/react-component-event-listener`, `react-is` and `react-popper` with in-repo modules, leaving `@babel/runtime`, `@popperjs/core`, `lodash`, `lodash-es` and `prop-types`. Added React 19 support (peer range now `^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0`), and fixed `Search` keyboard selection reporting and scrolling to the previous result on React 18+, `Image` crashing when given `content`, duplicate `Breadcrumb` divider keys, `element.ref` warnings on React 19 in `Portal` and `Input`, and typings using the `React.ReactNodeArray` type that `@types/react` 19 removed. The toolchain now targets Node 22+ with Babel 8, ESLint 9 (flat config), Prettier 3, TypeScript 6 and Vitest with React Testing Library, and the build adds a minified ES module bundle (`dist/bundle`) and a standalone bundle including React (`dist/standalone`) alongside the UMD bundle, which is now built with Vite and loadable via `require()`.
 
