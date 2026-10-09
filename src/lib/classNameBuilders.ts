@@ -19,7 +19,7 @@ import { numberToWord } from './numberToWord'
  * <Label tag />
  * <div class="ui tag label"></div>
  */
-export const getKeyOnly = (val, key) => val && key
+export const getKeyOnly = (val: unknown, key: string) => val && key
 
 /**
  * Props that require both a key and value to create a className.
@@ -30,7 +30,7 @@ export const getKeyOnly = (val, key) => val && key
  * <Label corner='left' />
  * <div class="ui left corner label"></div>
  */
-export const getValueAndKey = (val, key) => val && val !== true && `${val} ${key}`
+export const getValueAndKey = (val: unknown, key: string) => val && val !== true && `${val} ${key}`
 
 /**
  * Props whose key will be used in className, or value and key.
@@ -45,7 +45,8 @@ export const getValueAndKey = (val, key) => val && val !== true && `${val} ${key
  * <Label pointing='left' />
  * <div class="ui left pointing label"></div>
  */
-export const getKeyOrValueAndKey = (val, key) => val && (val === true ? key : `${val} ${key}`)
+export const getKeyOrValueAndKey = (val: unknown, key: string) =>
+  val && (val === true ? key : `${val} ${key}`)
 
 //
 // Prop to className exceptions
@@ -63,14 +64,14 @@ export const getKeyOrValueAndKey = (val, key) => val && (val === true ? key : `$
  * <div class="mobile only row"></div>
  * <div class="mobile only tablet only row"></div>
  */
-export const getMultipleProp = (val, key) => {
+export const getMultipleProp = (val: any, key: string): string | null => {
   if (!val || val === true) return null
 
   return val
     .replace('large screen', 'large-screen')
     .replace(/ vertically/g, '-vertically')
     .split(' ')
-    .map((prop) => `${prop.replace('-', ' ')} ${key}`)
+    .map((prop: string) => `${prop.replace('-', ' ')} ${key}`)
     .join(' ')
 }
 
@@ -87,7 +88,7 @@ export const getMultipleProp = (val, key) => {
  * <Container textAlign='left' />
  * <div class="ui left aligned container"></div>
  */
-export const getTextAlignProp = (val) =>
+export const getTextAlignProp = (val: unknown) =>
   val === 'justified' ? 'justified' : getValueAndKey(val, 'aligned')
 
 /**
@@ -99,7 +100,7 @@ export const getTextAlignProp = (val) =>
  * <Grid verticalAlign='middle' />
  * <div class="ui middle aligned grid"></div>
  */
-export const getVerticalAlignProp = (val) => getValueAndKey(val, 'aligned')
+export const getVerticalAlignProp = (val: unknown) => getValueAndKey(val, 'aligned')
 
 /**
  * Create "X", "X wide" and "equal width" classNames.
@@ -122,7 +123,7 @@ export const getVerticalAlignProp = (val) => getValueAndKey(val, 'aligned')
  * <Grid columns={4} />
  * <div class="ui four column grid"></div>
  */
-export const getWidthProp = (val, widthClass = '', canEqual = false) => {
+export const getWidthProp = (val: unknown, widthClass = '', canEqual = false) => {
   if (canEqual && val === 'equal') {
     return 'equal width'
   }

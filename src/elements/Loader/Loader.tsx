@@ -1,13 +1,10 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getKeyOrValueAndKey,
 } from '../../lib'
@@ -80,36 +77,17 @@ const Loader = React.forwardRef<HTMLDivElement, LoaderProps>(function (props, re
 }) as ForwardRefComponent<LoaderProps, HTMLDivElement>
 
 Loader.displayName = 'Loader'
-Loader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A loader can be active or visible. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A loader can be disabled or hidden. */
-  disabled: PropTypes.bool,
-
-  /** A loader can show it's unsure of how long a task will take. */
-  indeterminate: PropTypes.bool,
-
-  /** Loaders can appear inline with content. */
-  inline: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['centered'])]),
-
-  /** Loaders can have their colors inverted. */
-  inverted: PropTypes.bool,
-
-  /** Loaders can have different sizes. */
-  size: PropTypes.oneOf(SUI.SIZES),
-}
+Loader.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'disabled',
+  'indeterminate',
+  'inline',
+  'inverted',
+  'size',
+]
 
 export default Loader

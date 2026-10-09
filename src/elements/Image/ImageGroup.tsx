@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { SemanticSIZES, SemanticShorthandContent, ForwardRefComponent } from '../../generic'
 
 export interface ImageGroupProps extends StrictImageGroupProps {
@@ -50,21 +42,6 @@ const ImageGroup = React.forwardRef<HTMLDivElement, ImageGroupProps>(function (p
 }) as ForwardRefComponent<ImageGroupProps, HTMLDivElement>
 
 ImageGroup.displayName = 'ImageGroup'
-ImageGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A group of images can be formatted to have the same size. */
-  size: PropTypes.oneOf(SUI.SIZES),
-}
+ImageGroup.handledProps = ['as', 'children', 'className', 'content', 'size']
 
 export default ImageGroup

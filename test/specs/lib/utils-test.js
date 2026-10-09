@@ -137,7 +137,6 @@ const cases = {
     [users, (u) => u.age],
     [null, 'a'],
   ],
-  sortBy: [[users, 'age'], [users, (u) => -u.age], [[3, undefined, 1, NaN, null, 2]], [null]],
   uniq: [[[1, 2, 1, NaN, NaN, '1']], [null], ['aab']],
   compact: [[array], [null]],
   first: [[array], [[]], [null]],
@@ -178,35 +177,13 @@ const cases = {
     [null, 'a'],
     [object, ['f.g']],
   ],
-  pickBy: [
-    [object, _.isNumber],
-    [null, fn],
-    [object, (value, key) => key === 'a'],
-  ],
   mapValues: [
     [object, (v) => typeof v],
     [users, 'name'],
     [null, fn],
   ],
   invert: [[{ a: 1, b: '2', c: 1 }], [null]],
-  transform: [
-    [
-      object,
-      (acc, value, key) => {
-        acc[key] = typeof value
-      },
-      {},
-    ],
-    [
-      [1, 2, 3],
-      (acc, v) => {
-        acc.push(v * 2)
-        return v < 2
-      },
-    ],
-  ],
   times: [[3, (i) => i * 2], [0, fn], [-1, fn], [2.5]],
-  sum: [[[1, 2, undefined, 3]], [[]], [null], [['a', 'b']]],
   min: [[[3, 1, null, 2]], [[]], [null], [['b', 'a']], [[NaN, 2]]],
   clamp: [
     [5, 0, 3],
@@ -224,7 +201,6 @@ const cases = {
   ],
   range: [[4], [-4], [1, 5], [0, 20, 5], [0, -4, -1], [1, 4, 0], [0]],
   round: [[4.006], [4.006, 2], [4060, -2], [1.005, 2], [-1.005, 2]],
-  trim: [['  abc  '], [null], ['\n\tabc ']],
   startsWith: [
     ['abc', 'a'],
     ['abc', 'b'],

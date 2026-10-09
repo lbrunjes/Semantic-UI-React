@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  createShorthand,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { childrenUtils, createShorthand, cx, getComponentType, getUnhandledProps } from '../../lib'
 import FeedDate from './FeedDate'
 import FeedUser from './FeedUser'
 import type {
@@ -77,24 +69,6 @@ const FeedSummary = React.forwardRef<HTMLDivElement, FeedSummaryProps>(function 
 }) as ForwardRefComponent<FeedSummaryProps, HTMLDivElement>
 
 FeedSummary.displayName = 'FeedSummary'
-FeedSummary.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for FeedDate. */
-  date: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedUser. */
-  user: customPropTypes.itemShorthand,
-}
+FeedSummary.handledProps = ['as', 'children', 'className', 'content', 'date', 'user']
 
 export default FeedSummary

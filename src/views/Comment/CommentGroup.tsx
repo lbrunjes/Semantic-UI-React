@@ -1,16 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-  getKeyOnly,
-} from '../../lib'
-import { without } from '../../lib/utils'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface CommentGroupProps extends StrictCommentGroupProps {
@@ -69,30 +59,15 @@ const CommentGroup = React.forwardRef<HTMLDivElement, CommentGroupProps>(functio
 }) as ForwardRefComponent<CommentGroupProps, HTMLDivElement>
 
 CommentGroup.displayName = 'CommentGroup'
-CommentGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Comments can be collapsed, or hidden from view. */
-  collapsed: PropTypes.bool,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Comments can hide extra information unless a user shows intent to interact with a comment. */
-  minimal: PropTypes.bool,
-
-  /** Comments can have different sizes. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** A comment list can be threaded to showing the relationship between conversations. */
-  threaded: PropTypes.bool,
-}
+CommentGroup.handledProps = [
+  'as',
+  'children',
+  'className',
+  'collapsed',
+  'content',
+  'minimal',
+  'size',
+  'threaded',
+]
 
 export default CommentGroup

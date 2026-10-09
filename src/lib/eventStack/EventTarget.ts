@@ -1,21 +1,21 @@
-import EventPool from './EventPool'
+import EventPool, { type EventHandler } from './EventPool'
 
 /**
  * Manages pools of handlers for a single DOM node. A single native listener (in the capture phase)
  * is attached per event type and dispatches the event to every pool.
  */
 export default class EventTarget {
-  declare target: any
-  declare listeners: Map<string, (event: any) => void>
+  declare target: globalThis.EventTarget
+  declare listeners: Map<string, (event: Event) => void>
   declare pools: Map<string, EventPool>
 
-  constructor(target) {
+  constructor(target: globalThis.EventTarget) {
     this.target = target
     this.listeners = new Map()
     this.pools = new Map()
   }
 
-  addHandlers(poolName, eventType, eventHandlers) {
+  addHandlers(poolName: string, eventType: string, eventHandlers: EventHandler[]) {
     const pool = this.pools.get(poolName)
     const nextPool = pool
       ? pool.addHandlers(eventType, eventHandlers)
@@ -30,7 +30,7 @@ export default class EventTarget {
     return this.listeners.size > 0
   }
 
-  removeHandlers(poolName, eventType, eventHandlers) {
+  removeHandlers(poolName: string, eventType: string, eventHandlers: EventHandler[]) {
     const pool = this.pools.get(poolName)
 
     if (!pool) return
@@ -51,8 +51,8 @@ export default class EventTarget {
     if (!hasHandlers) this.removeTargetListener(eventType)
   }
 
-  addTargetListener(eventType) {
-    const listener = (event) => {
+  addTargetListener(eventType: string) {
+    const listener = (event: Event) => {
       this.pools.forEach((pool) => pool.dispatchEvent(eventType, event))
     }
 
@@ -60,7 +60,7 @@ export default class EventTarget {
     this.target.addEventListener(eventType, listener, true)
   }
 
-  removeTargetListener(eventType) {
+  removeTargetListener(eventType: string) {
     const listener = this.listeners.get(eventType)
 
     if (!listener) return

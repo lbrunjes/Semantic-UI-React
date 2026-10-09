@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types'
 import React, { createElement } from 'react'
 
 import {
   childrenUtils,
   createHTMLLabel,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getWidthProp,
 } from '../../lib'
@@ -202,60 +199,20 @@ const FormField = React.forwardRef<HTMLElement, FormFieldProps>(function (props,
 }) as ForwardRefComponent<FormFieldProps, HTMLElement>
 
 FormField.displayName = 'FormField'
-FormField.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /**
-   * A form control component (i.e. Dropdown) or HTML tagName (i.e. 'input').
-   * Extra FormField props are passed to the control component.
-   * Mutually exclusive with children.
-   */
-  control: PropTypes.oneOfType([
-    PropTypes.elementType,
-    PropTypes.oneOf(['button', 'input', 'select', 'textarea']),
-  ]),
-
-  /** Individual fields may be disabled. */
-  disabled: PropTypes.bool,
-
-  /** Individual fields may display an error state along with a message. */
-  error: PropTypes.oneOfType([PropTypes.bool, customPropTypes.itemShorthand]),
-
-  /** The id of the control */
-  id: PropTypes.string,
-
-  /** A field can have its label next to instead of above it. */
-  inline: PropTypes.bool,
-
-  // Heads Up!
-  // Do not disallow children with `label` shorthand
-  // The `control` might accept a `label` prop and `children`
-  /** Mutually exclusive with children. */
-  label: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
-
-  /** A field can show that input is mandatory. */
-  required: PropTypes.bool,
-
-  /** Passed to the control component (i.e. <input type='password' />) */
-  type: customPropTypes.every([
-    customPropTypes.demand(['control']),
-    // don't strictly validate HTML types
-    // a control might be passed that uses a `type` prop with unknown values
-    // let the control validate if for us
-  ]),
-
-  /** A field can specify its width in grid columns */
-  width: PropTypes.oneOf(SUI.WIDTHS),
-}
+FormField.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'control',
+  'disabled',
+  'error',
+  'id',
+  'inline',
+  'label',
+  'required',
+  'type',
+  'width',
+]
 
 export default FormField

@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { customPropTypes, getUnhandledProps } from '../../lib'
+import { getUnhandledProps } from '../../lib'
 import Button from '../../elements/Button'
 import Modal from '../../modules/Modal'
 import { has } from '../../lib/utils'
@@ -66,19 +65,20 @@ const Confirm = React.forwardRef<HTMLDivElement, ConfirmProps>(function (props, 
   } = props
   const rest = getUnhandledProps(Confirm, props)
 
-  const handleCancel = (e) => {
+  // Events come from the buttons (`HTMLButtonElement`) and the Modal, the public callback types differ
+  const handleCancel = (e: React.MouseEvent<any>) => {
     props?.onCancel?.(e, props)
   }
 
-  const handleCancelOverrides = (predefinedProps) => ({
-    onClick: (e, buttonProps) => {
+  const handleCancelOverrides = (predefinedProps: ButtonProps) => ({
+    onClick: (e: React.MouseEvent<HTMLButtonElement>, buttonProps: ButtonProps) => {
       predefinedProps?.onClick?.(e, buttonProps)
       handleCancel(e)
     },
   })
 
-  const handleConfirmOverrides = (predefinedProps) => ({
-    onClick: (e, buttonProps) => {
+  const handleConfirmOverrides = (predefinedProps: ButtonProps) => ({
+    onClick: (e: React.MouseEvent<HTMLButtonElement>, buttonProps: ButtonProps) => {
       predefinedProps?.onClick?.(e, buttonProps)
       props?.onConfirm?.(e, props)
     },
@@ -112,40 +112,15 @@ const Confirm = React.forwardRef<HTMLDivElement, ConfirmProps>(function (props, 
 }) as ForwardRefComponent<ConfirmProps, HTMLDivElement>
 
 Confirm.displayName = 'Confirm'
-Confirm.propTypes = {
-  /** The cancel button text. */
-  cancelButton: customPropTypes.itemShorthand,
-
-  /** The OK button text. */
-  confirmButton: customPropTypes.itemShorthand,
-
-  /** The ModalContent text. */
-  content: customPropTypes.itemShorthand,
-
-  /** The ModalHeader text. */
-  header: customPropTypes.itemShorthand,
-
-  /**
-   * Called when the Modal is closed without clicking confirm.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onCancel: PropTypes.func,
-
-  /**
-   * Called when the OK button is clicked.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onConfirm: PropTypes.func,
-
-  /** Whether or not the modal is visible. */
-  open: PropTypes.bool,
-
-  /** A Confirm can vary in size */
-  size: PropTypes.oneOf(['mini', 'tiny', 'small', 'large', 'fullscreen']),
-}
+Confirm.handledProps = [
+  'cancelButton',
+  'confirmButton',
+  'content',
+  'header',
+  'onCancel',
+  'onConfirm',
+  'open',
+  'size',
+]
 
 export default Confirm

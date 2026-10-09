@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -16,6 +14,7 @@ import type {
   ForwardRefComponent,
   SemanticShorthandCollection,
   SemanticShorthandContent,
+  SemanticShorthandItem,
 } from '../../generic'
 
 export interface ModalActionsProps extends StrictModalActionsProps {
@@ -74,10 +73,11 @@ const ModalActions = React.forwardRef<HTMLDivElement, ModalActionsProps>(functio
 
   return (
     <ElementType {...rest} className={classes} ref={ref}>
-      {map(actions, (action) =>
+      {map(actions, (action: SemanticShorthandItem<ButtonProps>) =>
         Button.create(action, {
-          overrideProps: (predefinedProps) => ({
-            onClick: (e, buttonProps) => {
+          overrideProps: (predefinedProps: ButtonProps) => ({
+            // The public type of `onActionClick()` uses `HTMLAnchorElement`, Button renders a `button`
+            onClick: (e: React.MouseEvent<any>, buttonProps: ButtonProps) => {
               predefinedProps?.onClick?.(e, buttonProps)
               props?.onActionClick?.(e, buttonProps)
             },
@@ -89,31 +89,13 @@ const ModalActions = React.forwardRef<HTMLDivElement, ModalActionsProps>(functio
 }) as ForwardRefComponent<ModalActionsProps, HTMLDivElement>
 
 ModalActions.displayName = 'ModalActions'
-ModalActions.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+ModalActions.handledProps = ['actions', 'as', 'children', 'className', 'content', 'onActionClick']
 
-  /** Array of shorthand buttons. */
-  actions: customPropTypes.collectionShorthand,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /**
-   * Action onClick handler when using shorthand `actions`.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props from the clicked action.
-   */
-  onActionClick: customPropTypes.every([customPropTypes.disallow(['children']), PropTypes.func]),
-}
-
-ModalActions.create = createShorthandFactory(ModalActions, (actions) => ({ actions }))
+ModalActions.create = createShorthandFactory(
+  ModalActions,
+  (actions: ModalActionsProps['actions']) => ({
+    actions,
+  }),
+)
 
 export default ModalActions

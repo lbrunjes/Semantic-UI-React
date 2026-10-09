@@ -28,10 +28,7 @@ const ItemImage = React.forwardRef<HTMLImageElement, ItemImageProps>(function (p
 }) as ForwardRefComponent<ItemImageProps, HTMLImageElement>
 
 ItemImage.displayName = 'ItemImage'
-ItemImage.propTypes = {
-  /** An image may appear at different sizes. */
-  size: Image.propTypes.size,
-}
+ItemImage.handledProps = ['size']
 
 ItemImage.create = createShorthandFactory(ItemImage, (src) => ({ src }))
 

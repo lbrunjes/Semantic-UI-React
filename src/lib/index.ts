@@ -1,5 +1,3 @@
-import makeDebugger from './makeDebugger'
-
 export { default as ModernAutoControlledComponent } from './ModernAutoControlledComponent'
 export * as childrenUtils from './childrenUtils'
 
@@ -13,7 +11,6 @@ export {
   getWidthProp,
 } from './classNameBuilders'
 
-export * as customPropTypes from './customPropTypes'
 export { default as cx } from './cx'
 export { default as EventListener, documentRef } from './EventListener'
 export { default as eventStack, EventStack } from './eventStack'
@@ -33,19 +30,14 @@ export {
 export { default as isBrowser } from './isBrowser'
 export { default as keyboardKey } from './keyboardKey'
 export { default as doesNodeContainClick } from './doesNodeContainClick'
-export { default as leven } from './leven'
 export { default as createPaginationItems } from './createPaginationItems'
 export * as SUI from './SUI'
 
 export { numberToWordMap, numberToWord } from './numberToWord'
 export { default as normalizeTransitionDuration } from './normalizeTransitionDuration'
-export { default as objectDiff } from './objectDiff'
 export { default as isRefObject } from './isRefObject'
 export { getElementRef, isForwardRef, isFragment, isValidElementType } from './reactIs'
 export { default as shallowEqual } from './shallowEqual'
-
-// Heads up! We import/export for this module to safely remove it with "babel-plugin-filter-imports"
-export { makeDebugger }
 
 //
 // Hooks

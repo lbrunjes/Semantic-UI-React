@@ -1,8 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -81,6 +79,10 @@ export interface StrictStickyProps {
   styleElement?: React.CSSProperties
 }
 
+// Scroll/resize DOM events, `undefined` for the initial update; the public callbacks declare React
+// events
+type StickyEvent = any
+
 /**
  * Sticky content stays fixed to the browser viewport while another column of content is visible on the page.
  */
@@ -97,20 +99,23 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
   } = props
 
   const [sticky, setSticky] = React.useState(false)
-  const [bound, setBound] = React.useState()
-  const [bottom, setBottom] = React.useState()
-  const [pushing, setPushing] = React.useState()
-  const [top, setTop] = React.useState()
+  const [bound, setBound] = React.useState<boolean>()
+  const [bottom, setBottom] = React.useState<number | null>()
+  const [pushing, setPushing] = React.useState<boolean>()
+  const [top, setTop] = React.useState<number | null>()
 
-  const stickyRef = React.useRef(undefined)
-  const triggerRef = React.useRef(undefined)
+  // Kept initialized with `undefined` as before, typed like the DOM refs React expects
+  const stickyRef = React.useRef<HTMLDivElement | null>(undefined as unknown as null)
+  const triggerRef = React.useRef<HTMLDivElement | null>(undefined as unknown as null)
 
-  const triggerRect = React.useRef(undefined)
-  const contextRect = React.useRef(undefined)
-  const stickyRect = React.useRef(undefined)
+  // Heads up! The rects below are assigned by `assignRects()` in `update()`, before they are read
+  // (the component becomes `sticky` only in `update()`)
+  const triggerRect = React.useRef<DOMRect>(undefined)
+  const contextRect = React.useRef<DOMRect>(undefined)
+  const stickyRect = React.useRef<DOMRect>(undefined)
 
-  const frameId = React.useRef(undefined)
-  const ticking = React.useRef(undefined)
+  const frameId = React.useRef<number>(undefined)
+  const ticking = React.useRef<boolean>(undefined)
 
   // ----------------------------------------
   // Helpers
@@ -119,9 +124,10 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
   const assignRects = () => {
     const contextNode = isRefObject(context) ? context.current : context || document.body
 
-    triggerRect.current = triggerRef.current.getBoundingClientRect()
+    // `update()` runs after the render, the elements are mounted
+    triggerRect.current = triggerRef.current!.getBoundingClientRect()
     contextRect.current = contextNode.getBoundingClientRect()
-    stickyRect.current = stickyRef.current.getBoundingClientRect()
+    stickyRect.current = stickyRef.current!.getBoundingClientRect()
   }
 
   const computeStyle = () => {
@@ -132,74 +138,74 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
     return {
       bottom: bound ? 0 : bottom,
       top: bound ? undefined : top,
-      width: triggerRect.current.width,
+      width: triggerRect.current!.width,
       ...styleElement,
     }
   }
 
   // Return true when the component reached the bottom of the context
   const didReachContextBottom = () =>
-    stickyRect.current.height + offset >= contextRect.current.bottom
+    stickyRect.current!.height + offset >= contextRect.current!.bottom
 
   // Return true when the component reached the starting point
-  const didReachStartingPoint = () => stickyRect.current.top <= triggerRect.current.top
+  const didReachStartingPoint = () => stickyRect.current!.top <= triggerRect.current!.top
 
   // Return true when the top of the screen overpasses the Sticky component
-  const didTouchScreenTop = () => triggerRect.current.top < offset
+  const didTouchScreenTop = () => triggerRect.current!.top < offset
 
   // Return true when the bottom of the screen overpasses the Sticky component
-  const didTouchScreenBottom = () => contextRect.current.bottom + bottomOffset > window.innerHeight
+  const didTouchScreenBottom = () => contextRect.current!.bottom + bottomOffset > window.innerHeight
 
   // Return true if the height of the component is higher than the window
-  const isOversized = () => stickyRect.current.height > window.innerHeight
+  const isOversized = () => stickyRect.current!.height > window.innerHeight
 
   // ----------------------------------------
   // Stick helpers
   // ----------------------------------------
 
   // If true, the component will stick to the bottom of the screen instead of the top
-  const togglePushing = (value) => {
+  const togglePushing = (value: boolean) => {
     if (props.pushing) {
       setPushing(value)
     }
   }
 
-  const setSticked = (e, newBound) => {
+  const setSticked = (e: StickyEvent, newBound: boolean) => {
     setBound(newBound)
     setSticky(true)
 
     props?.onStick?.(e, props)
   }
 
-  const setUnsticked = (e, newBound) => {
+  const setUnsticked = (e: StickyEvent, newBound: boolean) => {
     setBound(newBound)
     setSticky(false)
 
     props?.onUnstick?.(e, props)
   }
 
-  const stickToContextBottom = (e) => {
+  const stickToContextBottom = (e: StickyEvent) => {
     setSticked(e, true)
     togglePushing(true)
 
     props?.onBottom?.(e, props)
   }
 
-  const stickToContextTop = (e) => {
+  const stickToContextTop = (e: StickyEvent) => {
     setUnsticked(e, false)
     togglePushing(false)
 
     props?.onTop?.(e, props)
   }
 
-  const stickToScreenBottom = (e) => {
+  const stickToScreenBottom = (e: StickyEvent) => {
     setSticked(e, false)
 
     setBottom(bottomOffset)
     setTop(null)
   }
 
-  const stickToScreenTop = (e) => {
+  const stickToScreenTop = (e: StickyEvent) => {
     setSticked(e, false)
 
     setBottom(null)
@@ -210,7 +216,7 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
   // Handlers
   // ----------------------------------------
 
-  const update = (e) => {
+  const update = (e: StickyEvent) => {
     ticking.current = false
     assignRects()
 
@@ -230,12 +236,12 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
     }
 
     if (isOversized()) {
-      if (contextRect.current.top > 0) {
+      if (contextRect.current!.top > 0) {
         stickToContextTop(e)
         return
       }
 
-      if (contextRect.current.bottom < window.innerHeight) {
+      if (contextRect.current!.bottom < window.innerHeight) {
         stickToContextBottom(e)
         return
       }
@@ -254,7 +260,7 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
     stickToContextTop(e)
   }
 
-  const handleUpdate = useEventCallback((e) => {
+  const handleUpdate = useEventCallback((e?: Event) => {
     if (!ticking.current) {
       ticking.current = true
       frameId.current = requestAnimationFrame(() => update(e))
@@ -283,7 +289,8 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
 
   React.useEffect(() => {
     return () => {
-      cancelAnimationFrame(frameId.current)
+      // `cancelAnimationFrame()` ignores `undefined` (no frame was requested)
+      cancelAnimationFrame(frameId.current as number)
     }
   }, [])
 
@@ -337,68 +344,21 @@ const Sticky = React.forwardRef<HTMLDivElement, StickyProps>(function (props, re
 }) as ForwardRefComponent<StickyProps, HTMLDivElement>
 
 Sticky.displayName = 'Sticky'
-Sticky.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A Sticky can be active. */
-  active: PropTypes.bool,
-
-  /** Offset in pixels from the bottom of the screen when fixing element to viewport. */
-  bottomOffset: PropTypes.number,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Context which sticky element should stick to. */
-  context: PropTypes.oneOfType([customPropTypes.domNode, customPropTypes.refObject]),
-
-  /** Offset in pixels from the top of the screen when fixing element to viewport. */
-  offset: PropTypes.number,
-
-  /**
-   * Callback when element is bound to bottom of parent container.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onBottom: PropTypes.func,
-
-  /**
-   * Callback when element is fixed to page.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onStick: PropTypes.func,
-
-  /**
-   * Callback when element is bound to top of parent container.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onTop: PropTypes.func,
-
-  /**
-   * Callback when element is unfixed from page.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onUnstick: PropTypes.func,
-
-  /** Whether element should be "pushed" by the viewport, attaching to the bottom of the screen when scrolling up. */
-  pushing: PropTypes.bool,
-
-  /** Context which sticky should attach onscroll events. */
-  scrollContext: PropTypes.oneOfType([customPropTypes.domNode, customPropTypes.refObject]),
-
-  /** Custom style for sticky element. */
-  styleElement: PropTypes.object,
-}
+Sticky.handledProps = [
+  'active',
+  'as',
+  'bottomOffset',
+  'children',
+  'className',
+  'context',
+  'offset',
+  'onBottom',
+  'onStick',
+  'onTop',
+  'onUnstick',
+  'pushing',
+  'scrollContext',
+  'styleElement',
+]
 
 export default Sticky

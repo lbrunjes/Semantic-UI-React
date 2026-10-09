@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -44,19 +42,7 @@ const LabelDetail = React.forwardRef<HTMLDivElement, LabelDetailProps>(function 
 }) as ForwardRefComponent<LabelDetailProps, HTMLDivElement>
 
 LabelDetail.displayName = 'LabelDetail'
-LabelDetail.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+LabelDetail.handledProps = ['as', 'children', 'className', 'content']
 
 LabelDetail.create = createShorthandFactory(LabelDetail, (val) => ({ content: val }))
 

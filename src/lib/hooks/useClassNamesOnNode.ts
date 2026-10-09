@@ -5,6 +5,12 @@ import useIsomorphicLayoutEffect from './useIsomorphicLayoutEffect'
 
 const CLASS_NAME_DELITIMITER = /\s+/
 
+/** A ref object that contains classnames as a string. */
+type ClassNameRef = React.RefObject<string | undefined>
+
+/** A DOM node that classnames are applied to, can be missing (i.e. during SSR). */
+type ClassNamesNode = HTMLElement | null | undefined
+
 /**
  * Accepts a set of ref objects that contain classnames as a string and returns an array of unique
  * classNames.
@@ -12,8 +18,8 @@ const CLASS_NAME_DELITIMITER = /\s+/
  * @param {Set<React.RefObject>|undefined} classNameRefs
  * @returns String[]
  */
-export function computeClassNames(classNameRefs) {
-  const classNames = []
+export function computeClassNames(classNameRefs: Set<ClassNameRef> | undefined): string[] {
+  const classNames: string[] = []
 
   if (classNameRefs) {
     classNameRefs.forEach((classNameRef) => {
@@ -40,20 +46,26 @@ export function computeClassNames(classNameRefs) {
  * @param {String[]} prevClassNames
  * @param {String[]} currentClassNames
  */
-export function computeClassNamesDifference(prevClassNames, currentClassNames) {
+export function computeClassNamesDifference(
+  prevClassNames: string[],
+  currentClassNames: string[],
+): [string[], string[]] {
   return [
     currentClassNames.filter((className) => prevClassNames.indexOf(className) === -1),
     prevClassNames.filter((className) => currentClassNames.indexOf(className) === -1),
   ]
 }
 
-const prevClassNames = new Map()
+const prevClassNames = new Map<ClassNamesNode, string[]>()
 
 /**
  * @param {HTMLElement} node
  * @param {Set<React.RefObject>|undefined} classNameRefs
  */
-export const handleClassNamesChange = (node, classNameRefs) => {
+export const handleClassNamesChange = (
+  node: ClassNamesNode,
+  classNameRefs: Set<ClassNameRef> | undefined,
+) => {
   const currentClassNames = computeClassNames(classNameRefs)
   const [forAdd, forRemoval] = computeClassNamesDifference(
     prevClassNames.get(node) || [],
@@ -69,33 +81,35 @@ export const handleClassNamesChange = (node, classNameRefs) => {
 }
 
 export class NodeRegistry {
-  declare nodes: Map<any, Set<any>>
+  declare nodes: Map<ClassNamesNode, Set<ClassNameRef>>
 
   constructor() {
     this.nodes = new Map()
   }
 
-  add = (node, classNameRef) => {
+  add = (node: ClassNamesNode, classNameRef: ClassNameRef) => {
     if (this.nodes.has(node)) {
-      const set = this.nodes.get(node)
+      // `has()` above guarantees that the set exists
+      const set = this.nodes.get(node)!
 
       set.add(classNameRef)
       return
     }
 
     // IE11 does not support constructor params
-    const set = new Set()
+    const set = new Set<ClassNameRef>()
     set.add(classNameRef)
 
     this.nodes.set(node, set)
   }
 
-  del = (node, classNameRef) => {
+  del = (node: ClassNamesNode, classNameRef: ClassNameRef) => {
     if (!this.nodes.has(node)) {
       return
     }
 
-    const set = this.nodes.get(node)
+    // `has()` above guarantees that the set exists
+    const set = this.nodes.get(node)!
 
     if (set.size === 1) {
       this.nodes.delete(node)
@@ -105,7 +119,10 @@ export class NodeRegistry {
     set.delete(classNameRef)
   }
 
-  emit = (node, callback) => {
+  emit = (
+    node: ClassNamesNode,
+    callback: (node: ClassNamesNode, classNameRefs: Set<ClassNameRef> | undefined) => void,
+  ) => {
     callback(node, this.nodes.get(node))
   }
 }
@@ -119,8 +136,11 @@ const nodeRegistry = new NodeRegistry()
  * @param {HTMLElement|React.RefObject} node
  * @param {String} className
  */
-export default function useClassNamesOnNode(node, className) {
-  const classNameRef = React.useRef(undefined)
+export default function useClassNamesOnNode(
+  node: ClassNamesNode | React.RefObject<ClassNamesNode>,
+  className: string | undefined,
+) {
+  const classNameRef = React.useRef<string | undefined>(undefined)
   const isMounted = React.useRef(false)
 
   useIsomorphicLayoutEffect(() => {

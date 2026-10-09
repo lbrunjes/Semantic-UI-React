@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface TableHeaderProps extends StrictTableHeaderProps {
@@ -52,21 +44,6 @@ const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
 ) as ForwardRefComponent<TableHeaderProps, HTMLTableSectionElement>
 
 TableHeader.displayName = 'TableHeader'
-TableHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A definition table can have a full width header or footer, filling in the gap left by the first column. */
-  fullWidth: PropTypes.bool,
-}
+TableHeader.handledProps = ['as', 'children', 'className', 'content', 'fullWidth']
 
 export default TableHeader

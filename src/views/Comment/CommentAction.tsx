@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface CommentActionProps extends StrictCommentActionProps {
@@ -50,21 +42,6 @@ const CommentAction = React.forwardRef<HTMLDivElement, CommentActionProps>(funct
 }) as ForwardRefComponent<CommentActionProps, HTMLDivElement>
 
 CommentAction.displayName = 'CommentAction'
-CommentAction.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Style as the currently active action. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+CommentAction.handledProps = ['active', 'as', 'children', 'className', 'content']
 
 export default CommentAction

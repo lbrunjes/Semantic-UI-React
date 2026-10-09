@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getUnhandledProps, getKeyOnly } from '../../lib'
@@ -52,19 +51,7 @@ const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(function (pro
 }
 
 Accordion.displayName = 'Accordion'
-Accordion.propTypes = {
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Format to take up the width of its container. */
-  fluid: PropTypes.bool,
-
-  /** Format for dark backgrounds. */
-  inverted: PropTypes.bool,
-
-  /** Adds some basic styling to accordion panels. */
-  styled: PropTypes.bool,
-}
+Accordion.handledProps = ['className', 'fluid', 'inverted', 'styled']
 
 Accordion.Accordion = AccordionAccordion
 Accordion.Content = AccordionContent

@@ -6,7 +6,7 @@
  * @param {*} objB
  * @returns {boolean}
  */
-export default function shallowEqual(objA, objB) {
+export default function shallowEqual(objA: any, objB: any): boolean {
   if (objA === objB) return true
 
   if (typeof objA !== 'object' || !objA || typeof objB !== 'object' || !objB) return false

@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface DimmerDimmableProps extends StrictDimmerDimmableProps {
@@ -58,24 +50,6 @@ const DimmerDimmable = React.forwardRef<HTMLDivElement, DimmerDimmableProps>(fun
 }) as ForwardRefComponent<DimmerDimmableProps, HTMLDivElement>
 
 DimmerDimmable.displayName = 'DimmerDimmable'
-DimmerDimmable.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A dimmable element can blur its contents. */
-  blurring: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Controls whether or not the dim is displayed. */
-  dimmed: PropTypes.bool,
-}
+DimmerDimmable.handledProps = ['as', 'blurring', 'children', 'className', 'content', 'dimmed']
 
 export default DimmerDimmable

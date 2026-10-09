@@ -4,7 +4,24 @@ import cx from './cx'
 import { isValidElementType } from './reactIs'
 import { isBoolean, isNumber, isPlainObject, isString, uniq } from './utils'
 
-const DEPRECATED_CALLS = {}
+const DEPRECATED_CALLS: Record<string, boolean> = {}
+
+/** Maps a primitive shorthand value (string, number, array) to the props of a component. */
+export type ShorthandValueToProps = (val: any) => Record<string, any>
+
+export interface ShorthandOptions {
+  /** Default props object. */
+  defaultProps?: Record<string, any>
+
+  /** Override props object or function (called with regular props). */
+  overrideProps?: Record<string, any> | ((props: Record<string, any>) => Record<string, any>)
+
+  /** Whether or not automatic key generation is allowed. */
+  autoGenerateKey?: boolean
+
+  /** Heads up! Ignored, some callers pass it: a key should be passed via `defaultProps`. */
+  key?: React.Key
+}
 
 // ============================================================
 // Factories
@@ -22,7 +39,12 @@ const DEPRECATED_CALLS = {}
  * @param {boolean} [options.autoGenerateKey=true] Whether or not automatic key generation is allowed
  * @returns {object|null}
  */
-export function createShorthand(Component, mapValueToProps, val, options: any = {}) {
+export function createShorthand(
+  Component: any,
+  mapValueToProps: ShorthandValueToProps | null,
+  val: any,
+  options: ShorthandOptions = {},
+) {
   if (!isValidElementType(Component)) {
     throw new Error('createShorthand(): Component should be a valid element type.')
   }
@@ -64,14 +86,15 @@ export function createShorthand(Component, mapValueToProps, val, options: any = 
   const usersProps =
     (valIsReactElement && val.props) ||
     (valIsPropsObject && val) ||
-    (valIsPrimitiveValue && mapValueToProps(val))
+    // TODO(bug): throws for primitive values if "mapValueToProps" is null (i.e. AccordionPanel)
+    (valIsPrimitiveValue && mapValueToProps!(val))
 
   // Override props
-  let { overrideProps = {} } = options
-  overrideProps =
-    typeof overrideProps === 'function'
-      ? overrideProps({ ...defaultProps, ...usersProps })
-      : overrideProps
+  const { overrideProps: overridePropsOption = {} } = options
+  const overrideProps =
+    typeof overridePropsOption === 'function'
+      ? overridePropsOption({ ...defaultProps, ...usersProps })
+      : overridePropsOption
 
   // Merge props
 
@@ -158,30 +181,37 @@ export function createShorthand(Component, mapValueToProps, val, options: any = 
  * @param {function} mapValueToProps A function that maps a primitive value to the Component props
  * @returns {function} A shorthand factory function waiting for `val` and `defaultProps`.
  */
-export function createShorthandFactory(Component, mapValueToProps) {
+export function createShorthandFactory(
+  Component: any,
+  mapValueToProps: ShorthandValueToProps | null,
+) {
   if (!isValidElementType(Component)) {
     throw new Error('createShorthandFactory(): Component should be a valid element type.')
   }
 
-  return (val, options?) => createShorthand(Component, mapValueToProps, val, options)
+  return (val: any, options?: ShorthandOptions) =>
+    createShorthand(Component, mapValueToProps, val, options)
 }
 
 // ============================================================
 // HTML Factories
 // ============================================================
-export const createHTMLDivision = /* #__PURE__ */ createShorthandFactory('div', (val) => ({
+export const createHTMLDivision = /* #__PURE__ */ createShorthandFactory('div', (val: unknown) => ({
   children: val,
 }))
-export const createHTMLIframe = /* #__PURE__ */ createShorthandFactory('iframe', (src) => ({ src }))
-export const createHTMLImage = /* #__PURE__ */ createShorthandFactory('img', (val) => ({
+export const createHTMLIframe = /* #__PURE__ */ createShorthandFactory(
+  'iframe',
+  (src: unknown) => ({ src }),
+)
+export const createHTMLImage = /* #__PURE__ */ createShorthandFactory('img', (val: unknown) => ({
   src: val,
 }))
-export const createHTMLInput = /* #__PURE__ */ createShorthandFactory('input', (val) => ({
+export const createHTMLInput = /* #__PURE__ */ createShorthandFactory('input', (val: unknown) => ({
   type: val,
 }))
-export const createHTMLLabel = /* #__PURE__ */ createShorthandFactory('label', (val) => ({
+export const createHTMLLabel = /* #__PURE__ */ createShorthandFactory('label', (val: unknown) => ({
   children: val,
 }))
-export const createHTMLParagraph = /* #__PURE__ */ createShorthandFactory('p', (val) => ({
+export const createHTMLParagraph = /* #__PURE__ */ createShorthandFactory('p', (val: unknown) => ({
   children: val,
 }))

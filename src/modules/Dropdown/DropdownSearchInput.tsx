@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { createShorthandFactory, cx, getComponentType, getUnhandledProps } from '../../lib'
@@ -35,10 +34,9 @@ const DropdownSearchInput = React.forwardRef<HTMLInputElement, DropdownSearchInp
   function (props, ref) {
     const { autoComplete = 'off', className, tabIndex, type = 'text', value } = props
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e?.target?.value
 
-      // eslint-disable-next-line react/prop-types -- a DOM event handler, it is not declared in propTypes to be passed with other HTML props
       props?.onChange?.(e, { ...props, value: newValue })
     }
 
@@ -63,26 +61,10 @@ const DropdownSearchInput = React.forwardRef<HTMLInputElement, DropdownSearchInp
 ) as ForwardRefComponent<DropdownSearchInputProps, HTMLInputElement>
 
 DropdownSearchInput.displayName = 'DropdownSearchInput'
-DropdownSearchInput.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+DropdownSearchInput.handledProps = ['as', 'autoComplete', 'className', 'tabIndex', 'type', 'value']
 
-  /** An input can have the auto complete. */
-  autoComplete: PropTypes.string,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** An input can receive focus. */
-  tabIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** The HTML input type. */
-  type: PropTypes.string,
-
-  /** Stored value. */
-  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-}
-
-DropdownSearchInput.create = createShorthandFactory(DropdownSearchInput, (type) => ({ type }))
+DropdownSearchInput.create = createShorthandFactory(DropdownSearchInput, (type: string) => ({
+  type,
+}))
 
 export default DropdownSearchInput

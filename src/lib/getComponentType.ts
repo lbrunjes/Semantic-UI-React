@@ -8,7 +8,8 @@
  * @param {Function} [options.getDefault] A function that returns a default element type.
  * @returns {string|Function} A ReactElement type
  */
-function getComponentType(props, options: any = {}) {
+// Returns `any` as the result is used as a JSX element type with arbitrary props
+function getComponentType(props: { as?: any; href?: unknown }, options: any = {}): any {
   const { defaultAs, getDefault } = options
 
   // ----------------------------------------

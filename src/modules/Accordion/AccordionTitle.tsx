@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -65,7 +63,7 @@ const AccordionTitle = React.forwardRef<HTMLDivElement, AccordionTitleProps>(fun
   const ElementType = getComponentType(props)
   const iconValue = icon == null ? 'dropdown' : icon
 
-  const handleClick = useEventCallback((e) => {
+  const handleClick = useEventCallback((e: React.MouseEvent<HTMLDivElement>) => {
     props?.onClick?.(e, props)
   })
 
@@ -86,36 +84,16 @@ const AccordionTitle = React.forwardRef<HTMLDivElement, AccordionTitleProps>(fun
 }) as ForwardRefComponent<AccordionTitleProps, HTMLDivElement>
 
 AccordionTitle.displayName = 'AccordionTitle'
-AccordionTitle.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Whether or not the title is in the open state. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for Icon. */
-  icon: customPropTypes.itemShorthand,
-
-  /** AccordionTitle index inside Accordion. */
-  index: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-}
+AccordionTitle.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'icon',
+  'index',
+  'onClick',
+]
 AccordionTitle.create = createShorthandFactory(AccordionTitle, (content) => ({ content }))
 
 export default AccordionTitle

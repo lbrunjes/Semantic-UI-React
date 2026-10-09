@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -47,19 +45,7 @@ const ListHeader = React.forwardRef<HTMLDivElement, ListHeaderProps>(function (p
 }) as ForwardRefComponent<ListHeaderProps, HTMLDivElement>
 
 ListHeader.displayName = 'ListHeader'
-ListHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+ListHeader.handledProps = ['as', 'children', 'className', 'content']
 
 ListHeader.create = createShorthandFactory(ListHeader, (content) => ({ content }))
 

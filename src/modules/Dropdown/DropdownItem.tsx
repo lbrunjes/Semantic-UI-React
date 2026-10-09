@@ -1,11 +1,9 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthand,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -104,7 +102,7 @@ const DropdownItem = React.forwardRef<HTMLDivElement, DropdownItemProps>(functio
     text,
   } = props
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     props?.onClick?.(e, props)
   }
 
@@ -139,13 +137,18 @@ const DropdownItem = React.forwardRef<HTMLDivElement, DropdownItemProps>(functio
   const iconElement = Icon.create(iconName, { autoGenerateKey: false })
   const imageElement = Image.create(image, { autoGenerateKey: false })
   const labelElement = Label.create(label, { autoGenerateKey: false })
-  const descriptionElement = createShorthand('span', (val) => ({ children: val }), description, {
-    defaultProps: { className: 'description' },
-    autoGenerateKey: false,
-  })
+  const descriptionElement = createShorthand(
+    'span',
+    (val: React.ReactNode) => ({ children: val }),
+    description,
+    {
+      defaultProps: { className: 'description' },
+      autoGenerateKey: false,
+    },
+  )
   const textElement = createShorthand(
     'span',
-    (val) => ({ children: val }),
+    (val: React.ReactNode) => ({ children: val }),
     childrenUtils.isNil(content) ? text : content,
     { defaultProps: { className: 'text' }, autoGenerateKey: false },
   )
@@ -163,61 +166,24 @@ const DropdownItem = React.forwardRef<HTMLDivElement, DropdownItemProps>(functio
 }) as ForwardRefComponent<DropdownItemProps, HTMLDivElement>
 
 DropdownItem.displayName = 'DropdownItem'
-DropdownItem.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+DropdownItem.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'disabled',
+  'flag',
+  'icon',
+  'image',
+  'label',
+  'onClick',
+  'selected',
+  'text',
+  'value',
+]
 
-  /** Style as the currently chosen item. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Additional text with less emphasis. */
-  description: customPropTypes.itemShorthand,
-
-  /** A dropdown item can be disabled. */
-  disabled: PropTypes.bool,
-
-  /** Shorthand for Flag. */
-  flag: customPropTypes.itemShorthand,
-
-  /** Shorthand for Icon. */
-  icon: customPropTypes.itemShorthand,
-
-  /** Shorthand for Image. */
-  image: customPropTypes.itemShorthand,
-
-  /** Shorthand for Label. */
-  label: customPropTypes.itemShorthand,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * The item currently selected by keyboard shortcut.
-   * This is not the active item.
-   */
-  selected: PropTypes.bool,
-
-  /** Display text. */
-  text: customPropTypes.contentShorthand,
-
-  /** Stored value. */
-  value: PropTypes.oneOfType([PropTypes.bool, PropTypes.number, PropTypes.string]),
-}
-
-DropdownItem.create = createShorthandFactory(DropdownItem, (opts) => opts)
+DropdownItem.create = createShorthandFactory(DropdownItem, (opts: DropdownItemProps) => opts)
 
 export default DropdownItem

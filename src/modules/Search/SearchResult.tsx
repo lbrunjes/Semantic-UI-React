@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  createHTMLImage,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { createHTMLImage, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface SearchResultProps extends StrictSearchResultProps {
@@ -67,7 +59,7 @@ export interface StrictSearchResultProps {
 //
 // Note: To avoid requiring a wrapping div, we return an array here so to
 // prevent rendering issues each node needs a unique key.
-const defaultRenderer = ({ image, price, title, description }) => [
+const defaultRenderer = ({ image, price, title, description }: SearchResultProps) => [
   image && (
     <div key='image' className='image'>
       {createHTMLImage(image, { autoGenerateKey: false })}
@@ -83,7 +75,7 @@ const defaultRenderer = ({ image, price, title, description }) => [
 const SearchResult = React.forwardRef<HTMLDivElement, SearchResultProps>(function (props, ref) {
   const { active, className, renderer = defaultRenderer } = props
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     props?.onClick?.(e, props)
   }
 
@@ -103,49 +95,18 @@ const SearchResult = React.forwardRef<HTMLDivElement, SearchResultProps>(functio
 }) as ForwardRefComponent<SearchResultProps, HTMLDivElement>
 
 SearchResult.displayName = 'SearchResult'
-SearchResult.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** The item currently selected by keyboard shortcut. */
-  active: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Additional text with less emphasis. */
-  description: PropTypes.string,
-
-  /** A unique identifier. */
-  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Add an image to the item. */
-  image: PropTypes.string,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /** Customized text for price. */
-  price: PropTypes.string,
-
-  /**
-   * Renders the result contents.
-   *
-   * @param {object} props - The SearchResult props object.
-   * @returns {*} - Renderable result contents.
-   */
-  renderer: PropTypes.func,
-
-  /** Display title. */
-  title: PropTypes.string.isRequired,
-}
+SearchResult.handledProps = [
+  'active',
+  'as',
+  'className',
+  'content',
+  'description',
+  'id',
+  'image',
+  'onClick',
+  'price',
+  'renderer',
+  'title',
+]
 
 export default SearchResult

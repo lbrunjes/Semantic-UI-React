@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getUnhandledProps, getValueAndKey } from '../../lib'
@@ -36,15 +35,6 @@ const TableHeaderCell = React.forwardRef<HTMLTableCellElement, TableHeaderCellPr
 ) as ForwardRefComponent<TableHeaderCellProps, HTMLTableCellElement>
 
 TableHeaderCell.displayName = 'TableHeaderCell'
-TableHeaderCell.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A header cell can be sorted in ascending or descending order. */
-  sorted: PropTypes.oneOf(['ascending', 'descending']),
-}
+TableHeaderCell.handledProps = ['as', 'className', 'sorted']
 
 export default TableHeaderCell

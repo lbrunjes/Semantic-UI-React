@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { childrenUtils, customPropTypes, cx, getComponentType, getUnhandledProps } from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import ItemContent from './ItemContent'
 import ItemDescription from './ItemDescription'
 import ItemExtra from './ItemExtra'
@@ -103,33 +102,16 @@ Item.Image = ItemImage
 Item.Meta = ItemMeta
 
 Item.displayName = 'Item'
-Item.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for ItemContent component. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for ItemDescription component. */
-  description: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemExtra component. */
-  extra: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemHeader component. */
-  header: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemImage component. */
-  image: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemMeta component. */
-  meta: customPropTypes.itemShorthand,
-}
+Item.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'extra',
+  'header',
+  'image',
+  'meta',
+]
 
 export default Item

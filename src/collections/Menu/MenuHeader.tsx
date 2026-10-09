@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { childrenUtils, customPropTypes, cx, getComponentType, getUnhandledProps } from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface MenuHeaderProps extends StrictMenuHeaderProps {
@@ -39,18 +38,6 @@ const MenuHeader = React.forwardRef<HTMLDivElement, MenuHeaderProps>(function (p
 }) as ForwardRefComponent<MenuHeaderProps, HTMLDivElement>
 
 MenuHeader.displayName = 'MenuHeader'
-MenuHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+MenuHeader.handledProps = ['as', 'children', 'className', 'content']
 
 export default MenuHeader

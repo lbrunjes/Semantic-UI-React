@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import RevealContent from './RevealContent'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
@@ -78,40 +70,16 @@ const Reveal = React.forwardRef<HTMLDivElement, RevealProps>(function (props, re
 }
 
 Reveal.displayName = 'Reveal'
-Reveal.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** An active reveal displays its hidden content. */
-  active: PropTypes.bool,
-
-  /** An animation name that will be applied to Reveal. */
-  animated: PropTypes.oneOf([
-    'fade',
-    'small fade',
-    'move',
-    'move right',
-    'move up',
-    'move down',
-    'rotate',
-    'rotate left',
-  ]),
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A disabled reveal will not animate when hovered. */
-  disabled: PropTypes.bool,
-
-  /** An element can show its content without delay. */
-  instant: PropTypes.bool,
-}
+Reveal.handledProps = [
+  'active',
+  'animated',
+  'as',
+  'children',
+  'className',
+  'content',
+  'disabled',
+  'instant',
+]
 
 Reveal.Content = RevealContent
 

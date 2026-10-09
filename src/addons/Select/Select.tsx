@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import Dropdown from '../../modules/Dropdown'
@@ -24,9 +23,12 @@ export interface StrictSelectProps extends StrictDropdownProps {
  * @see Dropdown
  * @see Form
  */
+// Heads up! `PropsWithoutRef<>` drops the required props of the index-signature props interface, so the
+// cast goes through `unknown`.
+// eslint-disable-next-line react/display-name -- it is assigned below, the cast to the public type hides it from the rule
 const Select = React.forwardRef<HTMLDivElement, SelectProps>(function (props, ref) {
   return <Dropdown {...props} selection ref={ref} />
-}) as ForwardRefComponent<SelectProps, HTMLDivElement> & {
+}) as unknown as ForwardRefComponent<SelectProps, HTMLDivElement> & {
   Divider: typeof DropdownDivider
   Header: typeof DropdownHeader
   Item: typeof DropdownItem
@@ -34,10 +36,7 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(function (props, re
 }
 
 Select.displayName = 'Select'
-Select.propTypes = {
-  /** Array of Dropdown.Item props e.g. `{ text: '', value: '' }` */
-  options: PropTypes.arrayOf(PropTypes.shape(Dropdown.Item.propTypes)).isRequired,
-}
+Select.handledProps = ['options']
 
 Select.Divider = Dropdown.Divider
 Select.Header = Dropdown.Header

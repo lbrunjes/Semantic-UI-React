@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
@@ -38,12 +37,6 @@ const FormDropdown = React.forwardRef<HTMLDivElement, FormDropdownProps>(functio
 }) as ForwardRefComponent<FormDropdownProps, HTMLDivElement>
 
 FormDropdown.displayName = 'FormDropdown'
-FormDropdown.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-}
+FormDropdown.handledProps = ['as', 'control']
 
 export default FormDropdown

@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  createShorthand,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { childrenUtils, createShorthand, cx, getComponentType, getUnhandledProps } from '../../lib'
 import FeedDate from './FeedDate'
 import FeedExtra from './FeedExtra'
 import FeedMeta from './FeedMeta'
@@ -90,33 +82,16 @@ const FeedContent = React.forwardRef<HTMLDivElement, FeedContentProps>(function 
 }) as ForwardRefComponent<FeedContentProps, HTMLDivElement>
 
 FeedContent.displayName = 'FeedContent'
-FeedContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** An event can contain a date. */
-  date: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedExtra with images. */
-  extraImages: FeedExtra.propTypes.images,
-
-  /** Shorthand for FeedExtra with text. */
-  extraText: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedMeta. */
-  meta: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedSummary. */
-  summary: customPropTypes.itemShorthand,
-}
+FeedContent.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'date',
+  'extraImages',
+  'extraText',
+  'meta',
+  'summary',
+]
 
 export default FeedContent

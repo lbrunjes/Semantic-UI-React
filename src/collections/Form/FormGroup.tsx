@@ -1,15 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-  getKeyOnly,
-  getWidthProp,
-} from '../../lib'
+import { cx, getComponentType, getUnhandledProps, getKeyOnly, getWidthProp } from '../../lib'
 import type { ForwardRefComponent, SemanticWIDTHS } from '../../generic'
 
 export interface FormGroupProps extends StrictFormGroupProps {
@@ -58,7 +49,7 @@ const FormGroup = React.forwardRef<HTMLInputElement, FormGroupProps>((props, ref
     getKeyOnly(grouped, 'grouped'),
     getKeyOnly(inline, 'inline'),
     getKeyOnly(unstackable, 'unstackable'),
-    getWidthProp(widths, null, true),
+    getWidthProp(widths, undefined, true),
     'fields',
     className,
   )
@@ -73,33 +64,16 @@ const FormGroup = React.forwardRef<HTMLInputElement, FormGroupProps>((props, ref
 }) as ForwardRefComponent<FormGroupProps, HTMLInputElement>
 
 FormGroup.displayName = 'FormGroup'
-FormGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A Form Group can be disabled. */
-  disabled: PropTypes.bool,
-
-  /** A Form Group can have error. */
-  error: PropTypes.bool,
-
-  /** Fields can show related choices. */
-  grouped: customPropTypes.every([customPropTypes.disallow(['inline']), PropTypes.bool]),
-
-  /** Multiple fields may be inline in a row. */
-  inline: customPropTypes.every([customPropTypes.disallow(['grouped']), PropTypes.bool]),
-
-  /** A form group can prevent itself from stacking on mobile. */
-  unstackable: PropTypes.bool,
-
-  /** Fields Groups can specify their width in grid columns or automatically divide fields to be equal width. */
-  widths: PropTypes.oneOf([...SUI.WIDTHS, 'equal']),
-}
+FormGroup.handledProps = [
+  'as',
+  'children',
+  'className',
+  'disabled',
+  'error',
+  'grouped',
+  'inline',
+  'unstackable',
+  'widths',
+]
 
 export default FormGroup

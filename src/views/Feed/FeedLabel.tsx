@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  createHTMLImage,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { childrenUtils, createHTMLImage, cx, getComponentType, getUnhandledProps } from '../../lib'
 import Icon from '../../elements/Icon'
 import type {
   ForwardRefComponent,
@@ -70,24 +62,6 @@ const FeedLabel = React.forwardRef<HTMLDivElement, FeedLabelProps>(function (pro
 }) as ForwardRefComponent<FeedLabelProps, HTMLDivElement>
 
 FeedLabel.displayName = 'FeedLabel'
-FeedLabel.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** An event can contain icon label. */
-  icon: customPropTypes.itemShorthand,
-
-  /** An event can contain image label. */
-  image: customPropTypes.itemShorthand,
-}
+FeedLabel.handledProps = ['as', 'children', 'className', 'content', 'icon', 'image']
 
 export default FeedLabel

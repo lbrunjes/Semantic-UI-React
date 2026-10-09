@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { createShorthandFactory, keyboardKey } from '../../lib'
@@ -43,15 +42,17 @@ const PaginationItem = React.forwardRef<HTMLDivElement, PaginationItemProps>(fun
   const { active, type } = props
   const disabled = props.disabled || type === 'ellipsisItem'
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     props?.onClick?.(e, props)
   }
 
-  const handleKeyDown = (e) => {
-    props?.onKeyDown?.(e, props)
+  // Heads up! The public `onKeyDown`/`onClick` typings declare a MouseEvent, but this handler
+  // receives a KeyboardEvent.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLAnchorElement>) => {
+    props?.onKeyDown?.(e as any, props)
 
     if (keyboardKey.getCode(e) === keyboardKey.Enter) {
-      props?.onClick?.(e, props)
+      props?.onClick?.(e as any, props)
     }
   }
 
@@ -72,39 +73,7 @@ const PaginationItem = React.forwardRef<HTMLDivElement, PaginationItemProps>(fun
 }) as ForwardRefComponent<PaginationItemProps, HTMLDivElement>
 
 PaginationItem.displayName = 'PaginationItem'
-PaginationItem.propTypes = {
-  /** A pagination item can be active. */
-  active: PropTypes.bool,
-
-  /** A pagination item can be disabled. */
-  disabled: PropTypes.bool,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * Called on key down.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onKeyDown: PropTypes.func,
-
-  /** A pagination should have a type. */
-  type: PropTypes.oneOf([
-    'ellipsisItem',
-    'firstItem',
-    'prevItem',
-    'pageItem',
-    'nextItem',
-    'lastItem',
-  ]),
-}
+PaginationItem.handledProps = ['active', 'disabled', 'onClick', 'onKeyDown', 'type']
 
 PaginationItem.create = createShorthandFactory(PaginationItem, (content) => ({ content }))
 

@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -47,19 +45,7 @@ const MessageHeader = React.forwardRef<HTMLDivElement, MessageHeaderProps>(funct
 }) as ForwardRefComponent<MessageHeaderProps, HTMLDivElement>
 
 MessageHeader.displayName = 'MessageHeader'
-MessageHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+MessageHeader.handledProps = ['as', 'children', 'className', 'content']
 
 MessageHeader.create = createShorthandFactory(MessageHeader, (val) => ({ content: val }))
 

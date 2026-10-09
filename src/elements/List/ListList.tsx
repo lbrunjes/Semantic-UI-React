@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface ListListProps extends StrictListListProps {
@@ -47,18 +39,6 @@ const ListList = React.forwardRef<HTMLDivElement, ListListProps>(function (props
 }) as ForwardRefComponent<ListListProps, HTMLDivElement>
 
 ListList.displayName = 'ListList'
-ListList.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+ListList.handledProps = ['as', 'children', 'className', 'content']
 
 export default ListList

@@ -5,8 +5,8 @@ import * as React from 'react'
  *
  * @see https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
  */
-function usePrevious(value) {
-  const ref = React.useRef(undefined)
+function usePrevious<T>(value: T): T | undefined {
+  const ref = React.useRef<T | undefined>(undefined)
 
   React.useEffect(() => {
     ref.current = value

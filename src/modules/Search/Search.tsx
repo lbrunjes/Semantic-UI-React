@@ -1,21 +1,16 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   cx,
   keyboardKey,
   ModernAutoControlledComponent as Component,
-  customPropTypes,
   eventStack,
   getComponentType,
   getUnhandledProps,
   htmlInputAttrs,
   isBrowser,
-  makeDebugger,
-  objectDiff,
   partitionHTMLProps,
   shallowEqual,
-  SUI,
   getKeyOnly,
   getValueAndKey,
 } from '../../lib'
@@ -24,16 +19,7 @@ import SearchCategory from './SearchCategory'
 import SearchCategoryLayout from './SearchCategoryLayout'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
-import {
-  get,
-  inRange,
-  isEmpty,
-  isPlainObject,
-  map,
-  partialRight,
-  reduce,
-  without,
-} from '../../lib/utils'
+import { get, inRange, isEmpty, isPlainObject, map, partialRight, reduce } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticShorthandItem } from '../../generic'
 import type { InputProps } from '../../elements/Input'
 import type { SearchCategoryProps } from './SearchCategory'
@@ -203,16 +189,30 @@ export interface SearchResultData extends SearchProps {
   result: any
 }
 
-const debug = makeDebugger('search')
+/** Handlers subscribed via `eventStack` receive DOM events, the rest receive React events. */
+type SearchEvent = React.SyntheticEvent<HTMLElement> | Event
 
-const overrideSearchInputProps = (predefinedProps) => {
+interface SearchState {
+  focus?: boolean
+  open?: boolean
+  prevValue?: string
+  searchClasses?: string
+  selectedIndex: number
+  value: string
+}
+
+const overrideSearchInputProps = (predefinedProps: InputProps) => {
   const { input } = predefinedProps
 
   if (input === undefined) {
     return { ...predefinedProps, input: { className: 'prompt' } }
   }
   if (isPlainObject(input)) {
-    return { ...predefinedProps, input: { ...input, className: cx(input.className, 'prompt') } }
+    const inputProps = input as React.InputHTMLAttributes<HTMLInputElement>
+    return {
+      ...predefinedProps,
+      input: { ...inputProps, className: cx(inputProps.className, 'prompt') },
+    }
   }
 
   return predefinedProps
@@ -248,12 +248,10 @@ const Search = React.forwardRef<HTMLDivElement, SearchProps>((props, ref) => {
   Results: typeof SearchResults
 }
 
-class SearchInner extends Component<SearchProps, any> {
+class SearchInner extends Component<SearchProps, SearchState> {
   declare isMouseDown: boolean
 
-  static getAutoControlledStateFromProps(props, state) {
-    debug('getAutoControlledStateFromProps()')
-
+  static getAutoControlledStateFromProps(props: SearchProps, state: SearchState) {
     // We need to store a `prevValue` to compare as in `getDerivedStateFromProps` we don't have
     // prevState
     if (typeof state.prevValue !== 'undefined' && shallowEqual(state.prevValue, state.value)) {
@@ -261,33 +259,25 @@ class SearchInner extends Component<SearchProps, any> {
     }
 
     const selectedIndex = props.selectFirstResult ? 0 : -1
-    debug('value changed, setting selectedIndex', selectedIndex)
 
     return { prevValue: state.value, selectedIndex }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: SearchProps, nextState: SearchState) {
     return !shallowEqual(nextProps, this.props) || !shallowEqual(nextState, this.state)
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    debug('componentDidUpdate()')
-    debug('to state:', objectDiff(prevState, this.state))
-
+  componentDidUpdate(prevProps: SearchProps, prevState: SearchState) {
     // focused / blurred
     if (!prevState.focus && this.state.focus) {
-      debug('search focused')
       if (!this.isMouseDown) {
-        debug('mouse is not down, opening')
         this.tryOpen()
       }
       if (this.state.open) {
         eventStack.sub('keydown', [this.moveSelectionOnKeyDown, this.selectItemOnEnter])
       }
     } else if (prevState.focus && !this.state.focus) {
-      debug('search blurred')
       if (!this.isMouseDown) {
-        debug('mouse is not down, closing')
         this.close()
       }
       eventStack.unsub('keydown', [this.moveSelectionOnKeyDown, this.selectItemOnEnter])
@@ -295,7 +285,6 @@ class SearchInner extends Component<SearchProps, any> {
 
     // opened / closed
     if (!prevState.open && this.state.open) {
-      debug('search opened')
       this.open()
       eventStack.sub('click', this.closeOnDocumentClick)
       eventStack.sub('keydown', [
@@ -304,7 +293,6 @@ class SearchInner extends Component<SearchProps, any> {
         this.selectItemOnEnter,
       ])
     } else if (prevState.open && !this.state.open) {
-      debug('search closed')
       this.close()
       eventStack.unsub('click', this.closeOnDocumentClick)
       eventStack.unsub('keydown', [
@@ -316,8 +304,6 @@ class SearchInner extends Component<SearchProps, any> {
   }
 
   componentWillUnmount() {
-    debug('componentWillUnmount()')
-
     eventStack.unsub('click', this.closeOnDocumentClick)
     eventStack.unsub('keydown', [
       this.closeOnEscape,
@@ -330,29 +316,24 @@ class SearchInner extends Component<SearchProps, any> {
   // Document Event Handlers
   // ----------------------------------------
 
-  handleResultSelect = (e, result) => {
-    debug('handleResultSelect()')
-    debug(result)
-
-    this.props?.onResultSelect?.(e, { ...this.props, result })
+  // `selectItemOnEnter()` passes a DOM event (eventStack), the public type only knows mouse events
+  handleResultSelect = (e: SearchEvent, result: any) => {
+    this.props?.onResultSelect?.(e as React.MouseEvent<HTMLDivElement>, { ...this.props, result })
   }
 
-  handleSelectionChange = (e, selectedIndex) => {
-    debug('handleSelectionChange()')
-
+  // `moveSelectionOnKeyDown()` passes a DOM event (eventStack), the public type only knows mouse events
+  handleSelectionChange = (e: SearchEvent, selectedIndex: number) => {
     const result = this.getSelectedResult(selectedIndex)
-    this.props?.onSelectionChange?.(e, { ...this.props, result })
+    this.props?.onSelectionChange?.(e as React.MouseEvent<HTMLElement>, { ...this.props, result })
   }
 
-  closeOnEscape = (e) => {
+  closeOnEscape = (e: KeyboardEvent) => {
     if (keyboardKey.getCode(e) !== keyboardKey.Escape) return
     e.preventDefault()
     this.close()
   }
 
-  moveSelectionOnKeyDown = (e) => {
-    debug('moveSelectionOnKeyDown()')
-    debug(keyboardKey.getKey(e))
+  moveSelectionOnKeyDown = (e: KeyboardEvent) => {
     switch (keyboardKey.getCode(e)) {
       case keyboardKey.ArrowDown:
         e.preventDefault()
@@ -367,9 +348,7 @@ class SearchInner extends Component<SearchProps, any> {
     }
   }
 
-  selectItemOnEnter = (e) => {
-    debug('selectItemOnEnter()')
-    debug(keyboardKey.getKey(e))
+  selectItemOnEnter = (e: KeyboardEvent) => {
     if (keyboardKey.getCode(e) !== keyboardKey.Enter) return
 
     const result = this.getSelectedResult()
@@ -385,9 +364,7 @@ class SearchInner extends Component<SearchProps, any> {
     this.close()
   }
 
-  closeOnDocumentClick = (e) => {
-    debug('closeOnDocumentClick()')
-    debug(e)
+  closeOnDocumentClick = () => {
     this.close()
   }
 
@@ -395,34 +372,27 @@ class SearchInner extends Component<SearchProps, any> {
   // Component Event Handlers
   // ----------------------------------------
 
-  handleMouseDown = (e) => {
-    debug('handleMouseDown()')
-
+  handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
     this.isMouseDown = true
     this.props?.onMouseDown?.(e, this.props)
     eventStack.sub('mouseup', this.handleDocumentMouseUp)
   }
 
   handleDocumentMouseUp = () => {
-    debug('handleDocumentMouseUp()')
-
     this.isMouseDown = false
     eventStack.unsub('mouseup', this.handleDocumentMouseUp)
   }
 
-  handleInputClick = (e) => {
-    debug('handleInputClick()', e)
-
+  handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
     // prevent closeOnDocumentClick()
     e.nativeEvent.stopImmediatePropagation()
 
     this.tryOpen()
   }
 
-  handleItemClick = (e, { id }: any) => {
-    debug('handleItemClick()')
-    debug(id)
-    const result = this.getSelectedResult(id)
+  handleItemClick = (e: React.MouseEvent<HTMLDivElement>, { id }: SearchResultProps) => {
+    // `id` is always set to the result index by `renderResult()`
+    const result = this.getSelectedResult(id as number)
 
     // prevent closeOnDocumentClick()
     e.nativeEvent.stopImmediatePropagation()
@@ -433,41 +403,37 @@ class SearchInner extends Component<SearchProps, any> {
     this.close()
   }
 
-  handleItemMouseDown = (e) => {
-    debug('handleItemMouseDown()')
-
+  handleItemMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     // Heads up! We should prevent default to prevent blur events.
     // https://github.com/Semantic-Org/Semantic-UI-React/issues/3298
     e.preventDefault()
   }
 
-  handleFocus = (e) => {
-    debug('handleFocus()')
-
-    this.props?.onFocus?.(e, this.props)
+  handleFocus = (e: React.FocusEvent<HTMLElement>) => {
+    // the public type declares a mouse event
+    this.props?.onFocus?.(e as any, this.props)
     this.setState({ focus: true })
   }
 
-  handleBlur = (e) => {
-    debug('handleBlur()')
-
-    this.props?.onBlur?.(e, this.props)
+  handleBlur = (e: React.FocusEvent<HTMLElement>) => {
+    // the public type declares a mouse event
+    this.props?.onBlur?.(e as any, this.props)
     this.setState({ focus: false })
   }
 
-  handleSearchChange = (e) => {
-    debug('handleSearchChange()')
-    debug(e.target.value)
+  handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // prevent propagating to this.props.onChange()
     e.stopPropagation()
     const { minCharacters } = this.props
     const { open } = this.state
     const newQuery = e.target.value
 
-    this.props?.onSearchChange?.(e, { ...this.props, value: newQuery })
+    // the public type declares a mouse event
+    this.props?.onSearchChange?.(e as any, { ...this.props, value: newQuery })
 
     // open search dropdown on search query
-    if (newQuery.length < minCharacters) {
+    // `minCharacters` is defaulted by the `Search` wrapper
+    if (newQuery.length < minCharacters!) {
       this.close()
     } else if (!open) {
       this.tryOpen(newQuery)
@@ -480,15 +446,15 @@ class SearchInner extends Component<SearchProps, any> {
   // Getters
   // ----------------------------------------
 
-  getFlattenedResults = () => {
+  getFlattenedResults = (): any[] => {
     const { category, results } = this.props
 
     return !category
-      ? results
-      : reduce(results, (memo, categoryData) => memo.concat(categoryData.results), [])
+      ? (results as any[])
+      : reduce(results, (memo: any[], categoryData: any) => memo.concat(categoryData.results), [])
   }
 
-  getSelectedResult = (index = this.state.selectedIndex) => {
+  getSelectedResult = (index: number = this.state.selectedIndex) => {
     const results = this.getFlattenedResults()
     return get(results, index)
   }
@@ -497,18 +463,13 @@ class SearchInner extends Component<SearchProps, any> {
   // Setters
   // ----------------------------------------
 
-  setValue = (value) => {
-    debug('setValue()')
-    debug('value', value)
-
+  setValue = (value: string) => {
     const { selectFirstResult } = this.props
 
     this.setState({ value, selectedIndex: selectFirstResult ? 0 : -1 })
   }
 
-  moveSelectionBy = (e, offset) => {
-    debug('moveSelectionBy()')
-    debug(`offset: ${offset}`)
+  moveSelectionBy = (e: SearchEvent, offset: number) => {
     const { selectedIndex } = this.state
 
     const results = this.getFlattenedResults()
@@ -532,16 +493,12 @@ class SearchInner extends Component<SearchProps, any> {
   // ----------------------------------------
 
   scrollSelectedItemIntoView = () => {
-    debug('scrollSelectedItemIntoView()')
     // Do not access document when server side rendering
     if (!isBrowser()) return
     const menu = document.querySelector('.ui.search.active.visible .results.visible')
     if (!menu) return
-    debug(`menu (results): ${menu}`)
     const item = menu.querySelector<HTMLElement>('.result.active')
     if (!item) return
-    debug(`menu (results): ${menu}`)
-    debug(`item (result): ${item}`)
     const isOutOfUpperView = item.offsetTop < menu.scrollTop
     const isOutOfLowerView = item.offsetTop + item.clientHeight > menu.scrollTop + menu.clientHeight
 
@@ -554,21 +511,18 @@ class SearchInner extends Component<SearchProps, any> {
 
   // Open if the current value is greater than the minCharacters prop
   tryOpen = (currentValue = this.state.value) => {
-    debug('open()')
-
     const { minCharacters } = this.props
-    if (currentValue.length < minCharacters) return
+    // `minCharacters` is defaulted by the `Search` wrapper
+    if (currentValue.length < minCharacters!) return
 
     this.open()
   }
 
   open = () => {
-    debug('open()')
     this.setState({ open: true })
   }
 
   close = () => {
-    debug('close()')
     this.setState({ open: false })
   }
 
@@ -576,7 +530,7 @@ class SearchInner extends Component<SearchProps, any> {
   // Render
   // ----------------------------------------
 
-  renderSearchInput = (rest) => {
+  renderSearchInput = (rest: Record<string, any>) => {
     const { icon, input, placeholder } = this.props
     const { value } = this.state
 
@@ -613,7 +567,7 @@ class SearchInner extends Component<SearchProps, any> {
    * category. Since the index is reset to 0 for each new category, an offset
    * must be passed in.
    */
-  renderResult = ({ childKey, ...result }: any, index, _array, offset = 0) => {
+  renderResult = ({ childKey, ...result }: any, index: number, _array?: unknown, offset = 0) => {
     const { resultRenderer } = this.props
     const { selectedIndex } = this.state
     const offsetIndex = index + offset
@@ -643,7 +597,7 @@ class SearchInner extends Component<SearchProps, any> {
 
     let count = 0
 
-    return map(categories, ({ childKey, ...category }) => {
+    return map(categories, ({ childKey, ...category }: any) => {
       const categoryProps = {
         key: childKey ?? category.name,
         active: inRange(selectedIndex, count, count + category.results.length),
@@ -680,10 +634,6 @@ class SearchInner extends Component<SearchProps, any> {
   }
 
   render() {
-    debug('render()')
-    debug('props', this.props)
-    debug('state', this.state)
-
     const { searchClasses, focus, open } = this.state
     const { aligned, category, className, innerRef, fluid, loading, size } = this.props
 
@@ -724,169 +674,39 @@ class SearchInner extends Component<SearchProps, any> {
 }
 
 Search.displayName = 'Search'
-Search.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  // ------------------------------------
-  // Behavior
-  // ------------------------------------
-
-  /** Initial value of open. */
-  defaultOpen: PropTypes.bool,
-
-  /** Initial value. */
-  defaultValue: PropTypes.string,
-
-  /** Shorthand for Icon. */
-  icon: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
-
-  /** Minimum characters to query for results */
-  minCharacters: PropTypes.number,
-
-  /** Additional text for "No Results" message with less emphasis. */
-  noResultsDescription: PropTypes.node,
-
-  /** Message to display when there are no results. */
-  noResultsMessage: PropTypes.node,
-
-  /** Controls whether or not the results menu is displayed. */
-  open: PropTypes.bool,
-
-  /**
-   * One of:
-   * - array of Search.Result props e.g. `{ title: '', description: '' }` or
-   * - object of categories e.g. `{ name: '', results: [{ title: '', description: '' }]`
-   */
-  results: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.shape(SearchResult.propTypes)),
-    PropTypes.shape(SearchCategory.propTypes),
-  ]),
-
-  /** Whether the search should automatically select the first result after searching. */
-  selectFirstResult: PropTypes.bool,
-
-  /** Whether a "no results" message should be shown if no results are found. */
-  showNoResults: PropTypes.bool,
-
-  /** Current value of the search input. Creates a controlled component. */
-  value: PropTypes.string,
-
-  // ------------------------------------
-  // Rendering
-  // ------------------------------------
-
-  /**
-   * Renders the SearchCategory layout.
-   *
-   * @param {object} categoryContent - The Renderable SearchCategory contents.
-   * @param {object} resultsContent - The Renderable SearchResult contents.
-   * @returns {*} - Renderable SearchCategory layout.
-   */
-  categoryLayoutRenderer: PropTypes.func,
-
-  /**
-   * Renders the SearchCategory contents.
-   *
-   * @param {object} props - The SearchCategory props object.
-   * @returns {*} - Renderable SearchCategory contents.
-   */
-  categoryRenderer: PropTypes.func,
-
-  /**
-   * Renders the SearchResult contents.
-   *
-   * @param {object} props - The SearchResult props object.
-   * @returns {*} - Renderable SearchResult contents.
-   */
-  resultRenderer: PropTypes.func,
-
-  // ------------------------------------
-  // Callbacks
-  // ------------------------------------
-
-  /**
-   * Called on blur.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onBlur: PropTypes.func,
-
-  /**
-   * Called on focus.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onFocus: PropTypes.func,
-
-  /**
-   * Called on mousedown.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onMouseDown: PropTypes.func,
-
-  /**
-   * Called when a result is selected.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onResultSelect: PropTypes.func,
-
-  /**
-   * Called on search input change.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props, includes current value of search input.
-   */
-  onSearchChange: PropTypes.func,
-
-  /**
-   * Called when the active selection index is changed.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onSelectionChange: PropTypes.func,
-
-  // ------------------------------------
-  // Style
-  // ------------------------------------
-
-  /** A search can have its results aligned to its left or right container edge. */
-  aligned: PropTypes.string,
-
-  /** A search can display results from remote content ordered by categories. */
-  category: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A search can have its results take up the width of its container. */
-  fluid: PropTypes.bool,
-
-  /** Shorthand for input element. */
-  input: customPropTypes.itemShorthand,
-
-  /** A search can show a loading indicator. */
-  loading: PropTypes.bool,
-
-  /** A search can have different sizes. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** A search can show placeholder text when empty. */
-  placeholder: PropTypes.string,
-}
+Search.handledProps = [
+  'aligned',
+  'as',
+  'category',
+  'categoryLayoutRenderer',
+  'categoryRenderer',
+  'className',
+  'defaultOpen',
+  'defaultValue',
+  'fluid',
+  'icon',
+  'input',
+  'loading',
+  'minCharacters',
+  'noResultsDescription',
+  'noResultsMessage',
+  'onBlur',
+  'onFocus',
+  'onMouseDown',
+  'onResultSelect',
+  'onSearchChange',
+  'onSelectionChange',
+  'open',
+  'placeholder',
+  'resultRenderer',
+  'results',
+  'selectFirstResult',
+  'showNoResults',
+  'size',
+  'value',
+]
 
 SearchInner.autoControlledProps = ['open', 'value']
-
-if (process.env.NODE_ENV !== 'production') {
-  SearchInner.propTypes = Search.propTypes
-}
 
 Search.Category = SearchCategory
 // CategoryLayout is not a part of the public typings

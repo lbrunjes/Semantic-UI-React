@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
@@ -45,15 +44,6 @@ const CommentAvatar = React.forwardRef<HTMLDivElement, CommentAvatarProps>(funct
 }) as ForwardRefComponent<CommentAvatarProps, HTMLDivElement>
 
 CommentAvatar.displayName = 'CommentAvatar'
-CommentAvatar.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Specifies the URL of the image. */
-  src: PropTypes.string,
-}
+CommentAvatar.handledProps = ['as', 'className', 'src']
 
 export default CommentAvatar

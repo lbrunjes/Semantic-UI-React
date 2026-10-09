@@ -32,7 +32,7 @@ const OBJECT_TYPE_SYMBOLS = [
  * @param {*} type
  * @returns {boolean}
  */
-export const isValidElementType = (type) => {
+export const isValidElementType = (type: any): boolean => {
   if (typeof type === 'string' || typeof type === 'function') return true
   if (ELEMENT_TYPE_SYMBOLS.includes(type)) return true
 
@@ -49,7 +49,7 @@ export const isValidElementType = (type) => {
  * @param {*} element
  * @returns {boolean}
  */
-export const isForwardRef = (element) =>
+export const isForwardRef = (element: unknown): boolean =>
   React.isValidElement(element) &&
   typeof element.type === 'object' &&
   element.type !== null &&
@@ -61,7 +61,7 @@ export const isForwardRef = (element) =>
  * @param {*} element
  * @returns {boolean}
  */
-export const isFragment = (element) =>
+export const isFragment = (element: unknown): boolean =>
   React.isValidElement(element) && element.type === React.Fragment
 
 /**
@@ -71,7 +71,7 @@ export const isFragment = (element) =>
  * @param {React.ReactElement} element
  * @returns {React.Ref|undefined}
  */
-export const getElementRef = (element) => {
+export const getElementRef = (element: unknown): React.Ref<any> | undefined => {
   if (!React.isValidElement(element)) return undefined
 
   // React <= 18 in development: "props.ref" is a warning getter

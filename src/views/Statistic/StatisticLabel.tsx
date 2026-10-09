@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -46,19 +44,7 @@ const StatisticLabel = React.forwardRef<HTMLDivElement, StatisticLabelProps>(fun
 }) as ForwardRefComponent<StatisticLabelProps, HTMLDivElement>
 
 StatisticLabel.displayName = 'StatisticLabel'
-StatisticLabel.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+StatisticLabel.handledProps = ['as', 'children', 'className', 'content']
 
 StatisticLabel.create = createShorthandFactory(StatisticLabel, (content) => ({ content }))
 

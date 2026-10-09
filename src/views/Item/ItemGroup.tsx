@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -85,7 +83,7 @@ const ItemGroup = React.forwardRef<HTMLDivElement, ItemGroupProps>(function (pro
     )
   }
 
-  const itemsJSX = map(items, (item) => {
+  const itemsJSX = map(items, (item: ItemProps) => {
     const { childKey, ...itemProps } = item
     const finalKey =
       childKey ??
@@ -102,33 +100,16 @@ const ItemGroup = React.forwardRef<HTMLDivElement, ItemGroupProps>(function (pro
 }) as ForwardRefComponent<ItemGroupProps, HTMLDivElement>
 
 ItemGroup.displayName = 'ItemGroup'
-ItemGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Items can be divided to better distinguish between grouped content. */
-  divided: PropTypes.bool,
-
-  /** Shorthand array of props for Item. */
-  items: customPropTypes.collectionShorthand,
-
-  /** An item can be formatted so that the entire contents link to another page. */
-  link: PropTypes.bool,
-
-  /** A group of items can relax its padding to provide more negative space. */
-  relaxed: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['very'])]),
-
-  /** Prevent items from stacking on mobile. */
-  unstackable: PropTypes.bool,
-}
+ItemGroup.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'divided',
+  'items',
+  'link',
+  'relaxed',
+  'unstackable',
+]
 
 export default ItemGroup

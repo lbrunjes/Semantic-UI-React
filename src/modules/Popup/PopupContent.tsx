@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -46,20 +44,10 @@ const PopupContent = React.forwardRef<HTMLDivElement, PopupContentProps>(functio
 }) as ForwardRefComponent<PopupContentProps, HTMLDivElement>
 
 PopupContent.displayName = 'PopupContent'
-PopupContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+PopupContent.handledProps = ['as', 'children', 'className', 'content']
 
-  /** The content of the Popup */
-  children: PropTypes.node,
-
-  /** Classes to add to the Popup content className. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
-
-PopupContent.create = createShorthandFactory(PopupContent, (children) => ({ children }))
+PopupContent.create = createShorthandFactory(PopupContent, (children: React.ReactNode) => ({
+  children,
+}))
 
 export default PopupContent

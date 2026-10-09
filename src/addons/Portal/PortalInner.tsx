@@ -1,8 +1,7 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 import { createPortal } from 'react-dom'
 
-import { isBrowser, makeDebugger, useEventCallback } from '../../lib'
+import { isBrowser, useEventCallback } from '../../lib'
 import usePortalElement from './usePortalElement'
 
 export interface PortalInnerProps extends StrictPortalInnerProps {
@@ -33,8 +32,6 @@ export interface StrictPortalInnerProps {
   onUnmount?: (nothing: null, data: PortalInnerProps) => void
 }
 
-const debug = makeDebugger('PortalInner')
-
 /**
  * An inner component that allows you to render children outside their parent.
  */
@@ -45,11 +42,9 @@ const PortalInner = React.forwardRef<any, PortalInnerProps>(function (props, ref
   const element = usePortalElement(props.children, ref)
 
   React.useEffect(() => {
-    debug('componentDidMount()')
     handleMount()
 
     return () => {
-      debug('componentWillUnmount()')
       handleUnmount()
     }
   }, [])
@@ -62,28 +57,6 @@ const PortalInner = React.forwardRef<any, PortalInnerProps>(function (props, ref
 }) as React.FC<PortalInnerProps>
 
 PortalInner.displayName = 'PortalInner'
-PortalInner.propTypes = {
-  /** Primary content. */
-  children: PropTypes.node.isRequired,
-
-  /** The node where the portal should mount. */
-  mountNode: PropTypes.any,
-
-  /**
-   * Called when the portal is mounted on the DOM
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onMount: PropTypes.func,
-
-  /**
-   * Called when the portal is unmounted from the DOM
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onUnmount: PropTypes.func,
-}
+PortalInner.handledProps = ['children', 'mountNode', 'onMount', 'onUnmount']
 
 export default PortalInner

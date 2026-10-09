@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   doesNodeContainClick,
   getComponentType,
@@ -75,7 +73,7 @@ const DimmerInner = React.forwardRef<HTMLDivElement, DimmerInnerProps>(function 
     props
 
   const containerRef = useMergedRefs(ref, React.useRef(undefined))
-  const contentRef = React.useRef(undefined)
+  const contentRef = React.useRef<HTMLDivElement>(undefined)
 
   useIsomorphicLayoutEffect(() => {
     if (!containerRef.current?.style) {
@@ -89,7 +87,7 @@ const DimmerInner = React.forwardRef<HTMLDivElement, DimmerInnerProps>(function 
     }
   }, [active])
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     props?.onClick?.(e, props)
 
     if (contentRef.current !== e.target && doesNodeContainClick(contentRef.current, e)) {
@@ -118,7 +116,7 @@ const DimmerInner = React.forwardRef<HTMLDivElement, DimmerInnerProps>(function 
   return (
     <ElementType {...rest} className={classes} onClick={handleClick} ref={containerRef}>
       {childrenContent && (
-        <div className='content' ref={contentRef}>
+        <div className='content' ref={contentRef as React.RefObject<HTMLDivElement>}>
           {childrenContent}
         </div>
       )}
@@ -127,52 +125,19 @@ const DimmerInner = React.forwardRef<HTMLDivElement, DimmerInnerProps>(function 
 }) as ForwardRefComponent<DimmerInnerProps, HTMLDivElement>
 
 DimmerInner.displayName = 'DimmerInner'
-DimmerInner.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** An active dimmer will dim its parent container. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A disabled dimmer cannot be activated */
-  disabled: PropTypes.bool,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * Handles click outside Dimmer's content, but inside Dimmer area.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClickOutside: PropTypes.func,
-
-  /** A dimmer can be formatted to have its colors inverted. */
-  inverted: PropTypes.bool,
-
-  /** A dimmer can be formatted to be fixed to the page. */
-  page: PropTypes.bool,
-
-  /** A dimmer can be controlled with simple prop. */
-  simple: PropTypes.bool,
-
-  /** A dimmer can have its content top or bottom aligned. */
-  verticalAlign: PropTypes.oneOf(['bottom', 'top']),
-}
+DimmerInner.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'disabled',
+  'inverted',
+  'onClick',
+  'onClickOutside',
+  'page',
+  'simple',
+  'verticalAlign',
+]
 
 export default DimmerInner

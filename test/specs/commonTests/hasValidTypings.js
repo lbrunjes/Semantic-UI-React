@@ -1,6 +1,5 @@
 import _ from 'lodash'
 
-import { customPropTypes } from 'src/lib'
 import { componentInfoContext, getComponentName, getComponentProps } from 'test/utils'
 import {
   getNodes,
@@ -11,26 +10,12 @@ import {
   isForwardRefComponent,
 } from './tsHelpers'
 
-const isShorthand = (propType) =>
-  _.includes(
-    [
-      customPropTypes.collectionShorthand,
-      customPropTypes.contentShorthand,
-      customPropTypes.itemShorthand,
-    ],
-    propType,
-  )
-const shorthandMap = {
-  SemanticShorthandContent: customPropTypes.contentShorthand,
-  SemanticShorthandItem: customPropTypes.itemShorthand,
-  SemanticShorthandCollection: customPropTypes.collectionShorthand,
-}
-
 /**
  * Assert Component has the valid typings.
  * @param {React.Component|Function} Component A component that should conform.
  * @param {Object} [options={}]
- * @param {array} [options.ignoredTypingsProps=[]] Props that will be ignored in tests.
+ * @param {array} [options.ignoredTypingsProps=[]] Props of the typings that are not handled by the
+ *   component (they are passed to the rendered element).
  * @param {Object} [options.requiredProps={}] Props required to render Component without errors or warnings.
  * @param {Object} [options.forwardsRef=true] Indicates if component forwards refs.
  */
@@ -99,26 +84,21 @@ export default function hasValidTypings(Component, options = {}) {
         expect(hasAnySignature(tsNodes)).toBe(true)
       })
 
-      it('match the typings interface', () => {
-        const componentPropTypes = getComponentProps(Component).propTypes
-        const componentProps = _.keys(componentPropTypes)
+      it('match handled props of the component', () => {
+        const { handledProps = [] } = getComponentProps(Component)
         const interfaceProps = _.without(_.map(props, 'name'), ...ignoredTypingsProps)
 
-        componentProps.forEach((propName, index) => {
+        handledProps.forEach((propName) => {
           expect(
             interfaceProps,
-            `propTypes define "${propName}" but it is missing in typings`,
+            `"handledProps" include "${propName}" but it is missing in typings`,
           ).toContain(propName)
-          expect(
-            interfaceProps[index],
-            `propTypes define "${propName}" but its order doesn't match typings`,
-          ).toBe(propName)
         })
 
         interfaceProps.forEach((propName) => {
           expect(
-            componentProps,
-            `Typings define prop "${propName}" but it is missing in propTypes`,
+            handledProps,
+            `Typings define prop "${propName}" but it is missing in "handledProps"`,
           ).toContain(propName)
         })
       })
@@ -139,23 +119,6 @@ export default function hasValidTypings(Component, options = {}) {
             componentRequired,
             `Typings require "${propName}" but it is optional in tests`,
           ).toContain(propName)
-        })
-      })
-    })
-
-    const componentShorthands = _.pickBy(_.get(Component, 'propTypes'), isShorthand)
-
-    // Heads up! Vitest fails on empty suites
-    if (_.isEmpty(componentShorthands)) return
-
-    describe('shorthands', () => {
-      const { shorthands } = strictInterfaceObject
-
-      _.forEach(componentShorthands, (propType, propName) => {
-        it(`"${propName}" should have the correct shorthand type `, () => {
-          const { type } = _.find(shorthands, ['name', propName])
-
-          expect(shorthandMap[type]).toBe(propType)
         })
       })
     })

@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { childrenUtils, customPropTypes, cx, getComponentType, getUnhandledProps } from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface SearchResultsProps extends StrictSearchResultsProps {
@@ -36,18 +35,6 @@ const SearchResults = React.forwardRef<HTMLDivElement, SearchResultsProps>(funct
 }) as ForwardRefComponent<SearchResultsProps, HTMLDivElement>
 
 SearchResults.displayName = 'SearchResults'
-SearchResults.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+SearchResults.handledProps = ['as', 'children', 'className', 'content']
 
 export default SearchResults

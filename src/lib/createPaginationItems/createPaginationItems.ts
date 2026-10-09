@@ -4,9 +4,10 @@ import {
   createNextItem,
   createPageFactory,
   createPrevItem,
+  type PaginationItemDescriptor,
 } from './itemFactories'
 import { createComplexRange, createSimpleRange } from './rangeFactories'
-import { isSimplePagination, typifyOptions } from './paginationUtils'
+import { isSimplePagination, typifyOptions, type RawPaginationOptions } from './paginationUtils'
 
 /**
  * @param {object} rawOptions
@@ -16,7 +17,7 @@ import { isSimplePagination, typifyOptions } from './paginationUtils'
  * @param {number|string} rawOptions.siblingRange Number of always visible pages before and after the current one.
  * @param {number|string} rawOptions.totalPages Total number of pages.
  */
-const createPaginationItems = (rawOptions) => {
+const createPaginationItems = (rawOptions: RawPaginationOptions): PaginationItemDescriptor[] => {
   const options = typifyOptions(rawOptions)
   const { activePage, totalPages } = options
 

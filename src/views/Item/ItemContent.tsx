@@ -1,13 +1,10 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getVerticalAlignProp,
 } from '../../lib'
 import ItemHeader from './ItemHeader'
@@ -88,33 +85,16 @@ const ItemContent = React.forwardRef<HTMLDivElement, ItemContentProps>(function 
 }) as ForwardRefComponent<ItemContentProps, HTMLDivElement>
 
 ItemContent.displayName = 'ItemContent'
-ItemContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for ItemDescription component. */
-  description: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemExtra component. */
-  extra: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemHeader component. */
-  header: customPropTypes.itemShorthand,
-
-  /** Shorthand for ItemMeta component. */
-  meta: customPropTypes.itemShorthand,
-
-  /** Content can specify its vertical alignment. */
-  verticalAlign: PropTypes.oneOf(SUI.VERTICAL_ALIGNMENTS),
-}
+ItemContent.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'extra',
+  'header',
+  'meta',
+  'verticalAlign',
+]
 
 export default ItemContent

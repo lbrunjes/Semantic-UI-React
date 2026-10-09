@@ -2,7 +2,15 @@
  * Key codes and helpers for keyboard events, covering the keys used in this library.
  * A drop-in replacement for the subset of "keyboard-key" that we use.
  */
-const keyCodes = {
+const keyCodes: {
+  Backspace: number
+  Enter: number
+  Escape: number
+  Spacebar: number
+  ArrowUp: number
+  ArrowDown: number
+  [key: string]: number
+} = {
   Backspace: 8,
   Enter: 13,
   Escape: 27,
@@ -12,7 +20,7 @@ const keyCodes = {
 }
 
 // Maps `KeyboardEvent.key` values (including legacy ones from IE/Edge) to key codes
-const keyNameToCode = {
+const keyNameToCode: Record<string, number> = {
   ...keyCodes,
   ' ': keyCodes.Spacebar,
   Esc: keyCodes.Escape,
@@ -29,21 +37,24 @@ for (let code = 65; code <= 90; code += 1) {
   keyNameToCode[letter.toLowerCase()] = code
 }
 
-const codeToKeyName = Object.keys(keyCodes).reduce((acc, name) => {
+const codeToKeyName = Object.keys(keyCodes).reduce((acc: Record<number, string>, name) => {
   acc[keyCodes[name]] = name
   return acc
 }, {})
 
-const isObject = (value) => value !== null && typeof value === 'object'
-const lookupCode = (name) =>
-  Object.prototype.hasOwnProperty.call(keyNameToCode, name) ? keyNameToCode[name] : undefined
+const isObject = (value: unknown): value is Record<string, any> =>
+  value !== null && typeof value === 'object'
+const lookupCode = (name: unknown): number | undefined =>
+  Object.prototype.hasOwnProperty.call(keyNameToCode, name as PropertyKey)
+    ? keyNameToCode[name as string]
+    : undefined
 
 /**
  * Get the key code from a keyboard event or a key name.
  * @param {KeyboardEvent|Object|string} eventOrKey
  * @returns {number|undefined}
  */
-const getCode = (eventOrKey) => {
+const getCode = (eventOrKey: unknown): number | undefined => {
   if (isObject(eventOrKey)) {
     return eventOrKey.keyCode || eventOrKey.which || lookupCode(eventOrKey.key)
   }
@@ -56,14 +67,14 @@ const getCode = (eventOrKey) => {
  * @param {KeyboardEvent|Object|number} eventOrCode
  * @returns {string|undefined}
  */
-const getKey = (eventOrCode) => {
+const getKey = (eventOrCode: unknown): string | undefined => {
   if (isObject(eventOrCode)) {
     if (eventOrCode.key) return eventOrCode.key
 
     return codeToKeyName[eventOrCode.keyCode || eventOrCode.which]
   }
 
-  return codeToKeyName[eventOrCode]
+  return codeToKeyName[eventOrCode as number]
 }
 
 const keyboardKey = {

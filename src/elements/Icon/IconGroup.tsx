@@ -1,15 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-} from '../../lib'
-import { without } from '../../lib/utils'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 import type { IconSizeProp } from './Icon'
 
@@ -52,21 +43,6 @@ const IconGroup = React.forwardRef<HTMLElement, IconGroupProps>(function (props,
 }) as ForwardRefComponent<IconGroupProps, HTMLElement>
 
 IconGroup.displayName = 'IconGroup'
-IconGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Size of the icon group. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-}
+IconGroup.handledProps = ['as', 'children', 'className', 'content', 'size']
 
 export default IconGroup

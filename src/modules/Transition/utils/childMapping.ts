@@ -1,5 +1,8 @@
 import { Children, isValidElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { filter, forEach, has, keyBy, keys } from '../../../lib/utils'
+
+export type ChildMapping = Record<string, ReactElement<any>>
 
 /**
  * Given `this.props.children`, return an object mapping key to child.
@@ -7,14 +10,17 @@ import { filter, forEach, has, keyBy, keys } from '../../../lib/utils'
  * @param {object} children Element's children
  * @return {object} Mapping of key to child
  */
-export const getChildMapping = (children) =>
+export const getChildMapping = (children: ReactNode): ChildMapping =>
   keyBy(filter(Children.toArray(children), isValidElement), 'key')
 
-const getPendingKeys = (prev, next) => {
-  const nextKeysPending = {}
-  let pendingKeys = []
+const getPendingKeys = (
+  prev: ChildMapping,
+  next: ChildMapping,
+): [Record<string, string[]>, string[]] => {
+  const nextKeysPending: Record<string, string[]> = {}
+  let pendingKeys: string[] = []
 
-  forEach(keys(prev), (prevKey) => {
+  forEach(keys(prev), (prevKey: string) => {
     if (!has(next, prevKey)) {
       pendingKeys.push(prevKey)
       return
@@ -29,7 +35,8 @@ const getPendingKeys = (prev, next) => {
   return [nextKeysPending, pendingKeys]
 }
 
-const getValue = (key, prev, next) => (has(next, key) ? next[key] : prev[key])
+const getValue = (key: string, prev: ChildMapping, next: ChildMapping) =>
+  has(next, key) ? next[key] : prev[key]
 
 /**
  * When you're adding or removing children some may be added or removed in the same render pass. We want to show *both*
@@ -40,13 +47,16 @@ const getValue = (key, prev, next) => (has(next, key) ? next[key] : prev[key])
  * @param {object} next Next children as returned from `getChildMapping()`
  * @return {object} A key set that contains all keys in `prev` and all keys in `next` in a reasonable order
  */
-export const mergeChildMappings = (prev = {}, next = {}) => {
-  const childMapping = {}
+export const mergeChildMappings = (
+  prev: ChildMapping = {},
+  next: ChildMapping = {},
+): ChildMapping => {
+  const childMapping: ChildMapping = {}
   const [nextKeysPending, pendingKeys] = getPendingKeys(prev, next)
 
-  forEach(keys(next), (nextKey) => {
+  forEach(keys(next), (nextKey: string) => {
     if (has(nextKeysPending, nextKey)) {
-      forEach(nextKeysPending[nextKey], (pendingKey) => {
+      forEach(nextKeysPending[nextKey], (pendingKey: string) => {
         childMapping[pendingKey] = getValue(pendingKey, prev, next)
       })
     }
@@ -54,7 +64,7 @@ export const mergeChildMappings = (prev = {}, next = {}) => {
     childMapping[nextKey] = getValue(nextKey, prev, next)
   })
 
-  forEach(pendingKeys, (pendingKey) => {
+  forEach(pendingKeys, (pendingKey: string) => {
     childMapping[pendingKey] = getValue(pendingKey, prev, next)
   })
 

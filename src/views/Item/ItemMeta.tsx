@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -47,19 +45,7 @@ const ItemMeta = React.forwardRef<HTMLDivElement, ItemMetaProps>(function (props
 }) as ForwardRefComponent<ItemMetaProps, HTMLDivElement>
 
 ItemMeta.displayName = 'ItemMeta'
-ItemMeta.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+ItemMeta.handledProps = ['as', 'children', 'className', 'content']
 
 ItemMeta.create = createShorthandFactory(ItemMeta, (content) => ({ content }))
 

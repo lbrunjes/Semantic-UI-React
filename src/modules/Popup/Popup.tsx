@@ -1,16 +1,12 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createHTMLDivision,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  makeDebugger,
   shallowEqual,
-  SUI,
   useIsomorphicLayoutEffect,
   getKeyOnly,
   getKeyOrValueAndKey,
@@ -18,12 +14,13 @@ import {
   usePrevious,
 } from '../../lib'
 import Portal from '../../addons/Portal'
-import { placementMapping, positions, positionsMapping } from './lib/positions'
+import { placementMapping, positionsMapping } from './lib/positions'
 import createReferenceProxy from './lib/createReferenceProxy'
 import { Popper } from './lib/Popper'
+import type { PopperChildrenProps } from './lib/Popper'
 import PopupContent from './PopupContent'
 import PopupHeader from './PopupHeader'
-import { includes, pick, reduce, without } from '../../lib/utils'
+import { includes, pick, reduce } from '../../lib/utils'
 import type { SemanticShorthandItem } from '../../generic'
 import type { StrictPortalProps } from '../../addons/Portal'
 import type { PopupContentProps } from './PopupContent'
@@ -166,14 +163,12 @@ export interface StrictPopupProps extends StrictPortalProps {
   wide?: boolean | 'very'
 }
 
-const debug = makeDebugger('popup')
-
 /**
  * Calculates props specific for Portal component.
  *
  * @param {Object} props
  */
-function getPortalProps(props) {
+function getPortalProps(props: PopupProps) {
   const portalProps: Record<string, any> = {}
 
   const on = props.on ?? ['click', 'hover']
@@ -214,14 +209,17 @@ function getPortalProps(props) {
  * @param {Object} unhandledProps
  * @param {Boolean} disabled
  */
-function partitionPortalProps(unhandledProps, disabled) {
+function partitionPortalProps(
+  unhandledProps: Record<string, any>,
+  disabled: boolean,
+): { contentRestProps?: Record<string, any>; portalRestProps?: Record<string, any> } {
   if (disabled) {
     return {}
   }
 
   const contentRestProps = reduce(
     unhandledProps,
-    (acc, val, key) => {
+    (acc: Record<string, any>, val: unknown, key: string) => {
       if (!includes(Portal.handledProps, key)) acc[key] = val
 
       return acc
@@ -239,7 +237,10 @@ function partitionPortalProps(unhandledProps, disabled) {
  * @param {Array} popperDependencies
  * @param {React.Ref} positionUpdate
  */
-function usePositioningEffect(popperDependencies, positionUpdate) {
+function usePositioningEffect(
+  popperDependencies: unknown[] | undefined,
+  positionUpdate: React.RefObject<(() => unknown) | null | undefined>,
+) {
   const previousDependencies = usePrevious(popperDependencies)
 
   useIsomorphicLayoutEffect(() => {
@@ -283,8 +284,8 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
   const { contentRestProps, portalRestProps } = partitionPortalProps(unhandledProps, disabled)
 
   const elementRef = useMergedRefs(ref)
-  const positionUpdate = React.useRef(undefined)
-  const triggerRef = React.useRef(undefined)
+  const positionUpdate = React.useRef<(() => unknown) | null | undefined>(undefined)
+  const triggerRef = React.useRef<HTMLElement | undefined>(undefined)
   const zIndexWasSynced = React.useRef(false)
 
   // ----------------------------------------
@@ -297,24 +298,19 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
   // Handlers
   // ----------------------------------------
 
-  const handleClose = (e) => {
-    debug('handleClose()')
+  const handleClose = (e: React.MouseEvent<HTMLElement>) => {
     props?.onClose?.(e, { ...props, open: false })
   }
 
-  const handleOpen = (e) => {
-    debug('handleOpen()')
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
     props?.onOpen?.(e, { ...props, open: true })
   }
 
-  const handlePortalMount = (e) => {
-    debug('handlePortalMount()')
+  const handlePortalMount = (e: null) => {
     props?.onMount?.(e, props)
   }
 
-  const handlePortalUnmount = (e) => {
-    debug('handlePortalUnmount()')
-
+  const handlePortalUnmount = (e: null) => {
     positionUpdate.current = null
     props?.onUnmount?.(e, props)
   }
@@ -328,7 +324,7 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
     ref: popperRef,
     update,
     style: popperStyle,
-  }) => {
+  }: PopperChildrenProps) => {
     positionUpdate.current = update
 
     const classes = cx(
@@ -403,7 +399,7 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
       name: 'syncZIndex',
       enabled: true,
       phase: 'beforeRead',
-      fn: ({ state }) => {
+      fn: ({ state }: { state: PopperJS.State }) => {
         if (zIndexWasSynced.current) {
           return
         }
@@ -413,7 +409,8 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
 
         if (definedZIndex === undefined) {
           state.elements.popper.style.zIndex = window.getComputedStyle(
-            state.elements.popper.firstChild,
+            // The wrapping `div` always renders the popup element as its child
+            state.elements.popper.firstChild as Element,
           ).zIndex
         }
 
@@ -426,12 +423,9 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
       },
     },
   ]
-  debug('popper modifiers:', modifiers)
 
   const referenceElement = createReferenceProxy(context == null ? triggerRef : context)
   const mergedPortalProps = { ...getPortalProps(props), ...portalRestProps }
-
-  debug('portal props:', mergedPortalProps)
 
   return (
     <Portal
@@ -460,128 +454,37 @@ const Popup = React.forwardRef<any, PopupProps>(function (props, ref) {
 }
 
 Popup.displayName = 'Popup'
-Popup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Display the popup without the pointing arrow. */
-  basic: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Simple text content for the popover. */
-  content: customPropTypes.itemShorthand,
-
-  /** Existing element the pop-up should be bound to. */
-  context: PropTypes.oneOfType([PropTypes.object, customPropTypes.refObject]),
-
-  /** A disabled popup only renders its trigger. */
-  disabled: PropTypes.bool,
-
-  /** Enables the Popper.js event listeners. */
-  eventsEnabled: PropTypes.bool,
-
-  /** A flowing Popup has no maximum width and continues to flow to fit its content. */
-  flowing: PropTypes.bool,
-
-  /** Takes up the entire width of its offset container. */
-  // TODO: implement the Popup fluid layout
-  // fluid: PropTypes.bool,
-
-  /** Header displayed above the content in bold. */
-  header: customPropTypes.itemShorthand,
-
-  /** Hide the Popup when scrolling the window. */
-  hideOnScroll: PropTypes.bool,
-
-  /** Whether the popup should not close on hover. */
-  hoverable: PropTypes.bool,
-
-  /** Invert the colors of the Popup. */
-  inverted: PropTypes.bool,
-
-  /**
-   * Offset values in px unit to apply to rendered popup. The basic offset accepts an
-   * array with two numbers in the form [skidding, distance]:
-   * - `skidding` displaces the Popup along the reference element
-   * - `distance` displaces the Popup away from, or toward, the reference element in the direction of its placement. A positive number displaces it further away, while a negative number lets it overlap the reference.
-   *
-   * @see https://popper.js.org/docs/v2/modifiers/offset/
-   */
-  offset: PropTypes.oneOfType([PropTypes.func, PropTypes.arrayOf(PropTypes.number)]),
-
-  /** Events triggering the popup. */
-  on: PropTypes.oneOfType([
-    PropTypes.oneOf(['hover', 'click', 'focus']),
-    PropTypes.arrayOf(PropTypes.oneOf(['hover', 'click', 'focus'])),
-  ]),
-
-  /**
-   * Called when a close event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClose: PropTypes.func,
-
-  /**
-   * Called when the portal is mounted on the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onMount: PropTypes.func,
-
-  /**
-   * Called when an open event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onOpen: PropTypes.func,
-
-  /**
-   * Called when the portal is unmounted from the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onUnmount: PropTypes.func,
-
-  /** Disables automatic repositioning of the component, it will always be placed according to the position value. */
-  pinned: PropTypes.bool,
-
-  /** Position for the popover. */
-  position: PropTypes.oneOf(positions),
-
-  /** Tells `Popper.js` to use the `position: fixed` strategy to position the popover. */
-  positionFixed: PropTypes.bool,
-
-  /** A wrapping element for an actual content that will be used for positioning. */
-  popper: customPropTypes.itemShorthand,
-
-  /** An array containing custom settings for the Popper.js modifiers. */
-  popperModifiers: PropTypes.array,
-
-  /** A popup can have dependencies which update will schedule a position update. */
-  popperDependencies: PropTypes.array,
-
-  /** Popup size. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium', 'big', 'massive')),
-
-  /** Custom Popup style. */
-  style: PropTypes.object,
-
-  /** Element to be rendered in-place where the popup is defined. */
-  trigger: PropTypes.node,
-
-  /** Popup width. */
-  wide: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['very'])]),
-}
+Popup.handledProps = [
+  'as',
+  'basic',
+  'children',
+  'className',
+  'content',
+  'context',
+  'disabled',
+  'eventsEnabled',
+  'flowing',
+  'header',
+  'hideOnScroll',
+  'hoverable',
+  'inverted',
+  'offset',
+  'on',
+  'onClose',
+  'onMount',
+  'onOpen',
+  'onUnmount',
+  'pinned',
+  'popper',
+  'popperDependencies',
+  'popperModifiers',
+  'position',
+  'positionFixed',
+  'size',
+  'style',
+  'trigger',
+  'wide',
+]
 
 Popup.Content = PopupContent
 Popup.Header = PopupHeader

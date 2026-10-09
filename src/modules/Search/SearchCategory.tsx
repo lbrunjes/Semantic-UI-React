@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import SearchCategoryLayout from './SearchCategoryLayout'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 import type { SearchCategoryLayoutProps } from './SearchCategoryLayout'
@@ -66,7 +58,7 @@ const SearchCategory = React.forwardRef<HTMLDivElement, SearchCategoryProps>(fun
     className,
     content,
     layoutRenderer = SearchCategoryLayout,
-    renderer = ({ name }) => name,
+    renderer = ({ name }: SearchCategoryProps) => name,
   } = props
 
   const classes = cx(getKeyOnly(active, 'active'), 'category', className)
@@ -84,43 +76,16 @@ const SearchCategory = React.forwardRef<HTMLDivElement, SearchCategoryProps>(fun
 }) as ForwardRefComponent<SearchCategoryProps, HTMLDivElement>
 
 SearchCategory.displayName = 'SearchCategory'
-SearchCategory.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** The item currently selected by keyboard shortcut. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Display name. */
-  name: PropTypes.string,
-
-  /**
-   * Renders the category layout contents.
-   *
-   * @param {object} props - The SearchCategoryLayout props object.
-   * @returns {*} - Renderable category layout contents.
-   */
-  layoutRenderer: PropTypes.func,
-
-  /**
-   * Renders the category contents.
-   *
-   * @param {object} props - The SearchCategory props object.
-   * @returns {*} - Renderable category contents.
-   */
-  renderer: PropTypes.func,
-
-  /** Array of Search.Result props. */
-  results: PropTypes.array,
-}
+SearchCategory.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'layoutRenderer',
+  'name',
+  'renderer',
+  'results',
+]
 
 export default SearchCategory

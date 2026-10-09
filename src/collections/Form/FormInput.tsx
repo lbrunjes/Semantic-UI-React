@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
@@ -43,12 +42,6 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(function (p
 }) as ForwardRefComponent<FormInputProps, HTMLInputElement>
 
 FormInput.displayName = 'FormInput'
-FormInput.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-}
+FormInput.handledProps = ['as', 'control']
 
 export default FormInput

@@ -41,6 +41,7 @@ export default function isConformant(Component, options = {}) {
     spreadsUserProps = true,
   } = options
   const constructorName = getComponentName(Component)
+  const { autoControlledProps = [], handledProps = [] } = getComponentProps(Component)
 
   // Renders the component and returns its root DOM node
   const renderWithProps = (props) =>
@@ -224,18 +225,16 @@ export default function isConformant(Component, options = {}) {
       expect(componentProps.handledProps).toBeInstanceOf(Array)
     })
 
-    it('Component.handledProps includes all handled props', () => {
-      const computedProps = _.union(
-        componentProps.autoControlledProps,
-        _.keys(componentProps.propTypes),
-      )
-      const expectedProps = _.uniq(computedProps).sort()
+    // Typings of handled props are checked in "hasValidTypings()"
+    it('Component.handledProps are sorted, unique & include auto controlled props', () => {
+      expect(componentProps.handledProps).toEqual(_.uniq(componentProps.handledProps).sort())
 
-      expect(
-        componentProps.handledProps,
-        'It seems that not all props were defined in Component.handledProps, you need to check that they are equal ' +
-          'to the union of Component.autoControlledProps and keys of Component.propTypes',
-      ).toEqual(expectedProps)
+      autoControlledProps.forEach((propName) => {
+        expect(
+          componentProps.handledProps,
+          `Auto controlled prop "${propName}" is missing in Component.handledProps`,
+        ).toContain(propName)
+      })
     })
   })
 
@@ -310,7 +309,7 @@ export default function isConformant(Component, options = {}) {
               `${leftPad} ^ was not called with (event)`,
           ).toHaveProperty('nativeEvent')
 
-          if (_.has(Component.propTypes, listenerName)) {
+          if (_.includes(handledProps, listenerName)) {
             expect(
               data,
               `<${info.displayName} ${listenerName}={${handlerName}} />\n` +
@@ -343,7 +342,7 @@ export default function isConformant(Component, options = {}) {
   // ----------------------------------------
   // Handles className
   // ----------------------------------------
-  if (_.has(Component.propTypes, 'className')) {
+  if (_.includes(handledProps, 'className')) {
     if (rendersChildren) {
       describe('className (common)', () => {
         const { componentClassName = info.componentClassName } = options

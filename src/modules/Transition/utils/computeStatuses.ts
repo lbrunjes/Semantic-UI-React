@@ -13,7 +13,15 @@ export const TRANSITION_STATUS_UNMOUNTED = 'UNMOUNTED'
  * @param {Boolean} [options.visible]
  * @param {Boolean} [options.unmountOnHide]
  */
-export function computeStatuses(options) {
+interface ComputeStatusesOptions {
+  mountOnShow?: boolean
+  status?: string
+  transitionOnMount?: boolean
+  visible?: boolean
+  unmountOnHide?: boolean
+}
+
+export function computeStatuses(options: ComputeStatusesOptions) {
   const { mountOnShow, status, transitionOnMount, visible, unmountOnHide } = options
 
   if (visible) {

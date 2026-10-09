@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 
-import { createShorthandFactory, customPropTypes } from '../../lib'
+import { createShorthandFactory } from '../../lib'
 import AccordionTitle from './AccordionTitle'
 import AccordionContent from './AccordionContent'
 import type { SemanticShorthandItem } from '../../generic'
@@ -38,8 +37,8 @@ export interface StrictAccordionPanelProps {
  * A panel sub-component for Accordion component.
  */
 const AccordionPanel = class AccordionPanel extends Component<AccordionPanelProps> {
-  handleTitleOverrides = (predefinedProps) => ({
-    onClick: (e, titleProps) => {
+  handleTitleOverrides = (predefinedProps: AccordionTitleProps) => ({
+    onClick: (e: React.MouseEvent<HTMLDivElement>, titleProps: AccordionTitleProps) => {
       predefinedProps?.onClick?.(e, titleProps)
       this.props?.onTitleClick?.(e, titleProps)
     },
@@ -64,28 +63,9 @@ const AccordionPanel = class AccordionPanel extends Component<AccordionPanelProp
   }
 }
 
-AccordionPanel.propTypes = {
-  /** Whether or not the title is in the open state. */
-  active: PropTypes.bool,
+AccordionPanel.handledProps = ['active', 'content', 'index', 'onTitleClick', 'title']
 
-  /** A shorthand for Accordion.Content. */
-  content: customPropTypes.itemShorthand,
-
-  /** A panel index. */
-  index: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /**
-   * Called when a panel title is clicked.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All item props.
-   */
-  onTitleClick: PropTypes.func,
-
-  /** A shorthand for Accordion.Title. */
-  title: customPropTypes.itemShorthand,
-}
-
-AccordionPanel.create = createShorthandFactory(AccordionPanel, null)
+// Heads up! There is no mapping for primitive values, `ShorthandValueToProps` does not allow `null`
+AccordionPanel.create = createShorthandFactory(AccordionPanel, null as any)
 
 export default AccordionPanel as React.ComponentClass<AccordionPanelProps>

@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -49,19 +47,7 @@ const ItemDescription = React.forwardRef<HTMLDivElement, ItemDescriptionProps>(
 ) as ForwardRefComponent<ItemDescriptionProps, HTMLDivElement>
 
 ItemDescription.displayName = 'ItemDescription'
-ItemDescription.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+ItemDescription.handledProps = ['as', 'children', 'className', 'content']
 
 ItemDescription.create = createShorthandFactory(ItemDescription, (content) => ({ content }))
 

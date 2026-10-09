@@ -1,18 +1,15 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createHTMLDivision,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getValueAndKey,
 } from '../../lib'
-import { clamp, round, without } from '../../lib/utils'
+import { clamp, round } from '../../lib/utils'
 import type {
   ForwardRefComponent,
   HtmlLabelProps,
@@ -97,13 +94,18 @@ export interface StrictProgressProps {
  *
  * @return {Number|String}
  */
-function calculatePercent(percent, total, value) {
+function calculatePercent(
+  percent: number | string | undefined,
+  total: number | string | undefined,
+  value: number | string | undefined,
+) {
   if (percent !== undefined) {
     return percent
   }
 
   if (total !== undefined && value !== undefined) {
-    return (value / total) * 100
+    // Heads up! Strings are coerced to numbers by the division
+    return ((value as number) / (total as number)) * 100
   }
 
   return 0
@@ -118,11 +120,17 @@ function calculatePercent(percent, total, value) {
  *
  * @return {Number}
  */
-function getPercent(percent, total, value, progress, precision) {
+function getPercent(
+  percent: number | string | undefined,
+  total: number | string | undefined,
+  value: number | string | undefined,
+  progress: ProgressProps['progress'],
+  precision: number | undefined,
+) {
   const clampedPercent = clamp(calculatePercent(percent, total, value), 0, 100)
 
   if (total !== undefined && value !== undefined && progress === 'value') {
-    return (value / total) * 100
+    return ((value as number) / (total as number)) * 100
   }
 
   if (progress === 'value') {
@@ -223,7 +231,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(function (props
     <ElementType
       {...rest}
       className={classes}
-      data-percent={Math.floor(calculatedPercent)}
+      data-percent={Math.floor(calculatedPercent as number)}
       ref={ref}
     >
       <div className='bar' style={{ width: `${calculatedPercent}%` }}>
@@ -235,79 +243,28 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(function (props
 }) as ForwardRefComponent<ProgressProps, HTMLDivElement>
 
 Progress.displayName = 'Progress'
-Progress.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A progress bar can show activity. */
-  active: PropTypes.bool,
-
-  /** A progress bar can attach to and show the progress of an element (i.e. Card or Segment). */
-  attached: PropTypes.oneOf(['top', 'bottom']),
-
-  /** Whether success state should automatically trigger when progress completes. */
-  autoSuccess: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A progress bar can have different colors. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A progress bar be disabled. */
-  disabled: PropTypes.bool,
-
-  /** A progress bar can show a error state. */
-  error: PropTypes.bool,
-
-  /** An indicating progress bar visually indicates the current level of progress of a task. */
-  indicating: PropTypes.bool,
-
-  /** A progress bar can have its colors inverted. */
-  inverted: PropTypes.bool,
-
-  /** Can be set to either to display progress as percent or ratio. */
-  label: customPropTypes.itemShorthand,
-
-  /** Current percent complete. */
-  percent: customPropTypes.every([
-    customPropTypes.disallow(['total', 'value']),
-    PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  ]),
-
-  /** Decimal point precision for calculated progress. */
-  precision: PropTypes.number,
-
-  /** A progress bar can contain a text value indicating current progress. */
-  progress: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['percent', 'ratio', 'value'])]),
-
-  /** A progress bar can vary in size. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'mini', 'huge', 'massive')),
-
-  /** A progress bar can show a success state. */
-  success: PropTypes.bool,
-
-  /** For use with value. Together, these will calculate the percent. Mutually excludes percent. */
-  total: customPropTypes.every([
-    customPropTypes.demand(['value']),
-    customPropTypes.disallow(['percent']),
-    PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  ]),
-
-  /** For use with total. Together, these will calculate the percent. Mutually excludes percent. */
-  value: customPropTypes.every([
-    customPropTypes.disallow(['percent']),
-    PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  ]),
-
-  /** A progress bar can show a warning state. */
-  warning: PropTypes.bool,
-}
+Progress.handledProps = [
+  'active',
+  'as',
+  'attached',
+  'autoSuccess',
+  'children',
+  'className',
+  'color',
+  'content',
+  'disabled',
+  'error',
+  'indicating',
+  'inverted',
+  'label',
+  'percent',
+  'precision',
+  'progress',
+  'size',
+  'success',
+  'total',
+  'value',
+  'warning',
+]
 
 export default Progress

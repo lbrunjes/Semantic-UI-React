@@ -1,12 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  createPaginationItems,
-  customPropTypes,
-  getUnhandledProps,
-  useAutoControlledValue,
-} from '../../lib'
+import { createPaginationItems, getUnhandledProps, useAutoControlledValue } from '../../lib'
 import Menu from '../../collections/Menu'
 import PaginationItem from './PaginationItem'
 import { map } from '../../lib/utils'
@@ -69,6 +63,9 @@ export interface StrictPaginationProps {
 /**
  * A component to render a pagination.
  */
+// Heads up! `PropsWithoutRef<>` drops the required props of the index-signature props interface, so the
+// cast goes through `unknown`.
+// eslint-disable-next-line react/display-name -- it is assigned below, the cast to the public type hides it from the rule
 const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(function (props, ref) {
   const {
     'aria-label': ariaLabel = 'Pagination Navigation',
@@ -101,7 +98,10 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(function (p
     initialState: 1,
   })
 
-  const handleItemClick = (e, { value: nextActivePage }) => {
+  const handleItemClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    { value: nextActivePage }: PaginationItemProps,
+  ) => {
     const prevActivePage = activePage
 
     // Heads up! We need the cast to the "number" type there, as `activePage` can be a string
@@ -113,18 +113,19 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(function (p
     props?.onPageChange?.(e, { ...props, activePage: nextActivePage })
   }
 
-  const handleItemOverrides = (active, type, value) => (predefinedProps) => ({
-    active,
-    type,
-    key: `${type}-${value}`,
-    onClick: (e, itemProps) => {
-      predefinedProps?.onClick?.(e, itemProps)
+  const handleItemOverrides =
+    (active: boolean, type: string, value: number) => (predefinedProps: PaginationItemProps) => ({
+      active,
+      type,
+      key: `${type}-${value}`,
+      onClick: (e: React.MouseEvent<HTMLAnchorElement>, itemProps: PaginationItemProps) => {
+        predefinedProps?.onClick?.(e, itemProps)
 
-      if (itemProps.type !== 'ellipsisItem') {
-        handleItemClick(e, itemProps)
-      }
-    },
-  })
+        if (itemProps.type !== 'ellipsisItem') {
+          handleItemClick(e, itemProps)
+        }
+      },
+    })
 
   const items = createPaginationItems({
     activePage,
@@ -146,8 +147,8 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(function (p
 
   return (
     <Menu {...rest} aria-label={ariaLabel} pagination role='navigation' ref={ref}>
-      {map(items, ({ active, type, value }) =>
-        PaginationItem.create(paginationItemTypes[type], {
+      {map(items, ({ active, type, value }: { active: boolean; type: string; value: number }) =>
+        PaginationItem.create(paginationItemTypes[type as keyof typeof paginationItemTypes], {
           defaultProps: {
             content: value,
             disabled,
@@ -158,59 +159,27 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(function (p
       )}
     </Menu>
   )
-}) as ForwardRefComponent<PaginationProps, HTMLDivElement> & {
+}) as unknown as ForwardRefComponent<PaginationProps, HTMLDivElement> & {
   Item: typeof PaginationItem
 }
 
 Pagination.displayName = 'Pagination'
-Pagination.propTypes = {
-  /** A pagination item can have an aria label. */
-  'aria-label': PropTypes.string,
-
-  /** Initial activePage value. */
-  defaultActivePage: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Index of the currently active page. */
-  activePage: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Number of always visible pages at the beginning and end. */
-  boundaryRange: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** A pagination can be disabled. */
-  disabled: PropTypes.bool,
-
-  /** A shorthand for PaginationItem. */
-  ellipsisItem: customPropTypes.itemShorthand,
-
-  /** A shorthand for PaginationItem. */
-  firstItem: customPropTypes.itemShorthand,
-
-  /** A shorthand for PaginationItem. */
-  lastItem: customPropTypes.itemShorthand,
-
-  /** A shorthand for PaginationItem. */
-  nextItem: customPropTypes.itemShorthand,
-
-  /** A shorthand for PaginationItem. */
-  pageItem: customPropTypes.itemShorthand,
-
-  /** A shorthand for PaginationItem. */
-  prevItem: customPropTypes.itemShorthand,
-
-  /**
-   * Called on change of an active page.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onPageChange: PropTypes.func,
-
-  /** Number of always visible pages before and after the current one. */
-  siblingRange: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Total number of pages. */
-  totalPages: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-}
+Pagination.handledProps = [
+  'activePage',
+  'aria-label',
+  'boundaryRange',
+  'defaultActivePage',
+  'disabled',
+  'ellipsisItem',
+  'firstItem',
+  'lastItem',
+  'nextItem',
+  'onPageChange',
+  'pageItem',
+  'prevItem',
+  'siblingRange',
+  'totalPages',
+]
 
 Pagination.Item = PaginationItem
 

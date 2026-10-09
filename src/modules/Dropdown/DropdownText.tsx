@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -53,20 +51,10 @@ const DropdownText = React.forwardRef<HTMLDivElement, DropdownTextProps>(functio
 }) as ForwardRefComponent<DropdownTextProps, HTMLDivElement>
 
 DropdownText.displayName = 'DropdownText'
-DropdownText.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+DropdownText.handledProps = ['as', 'children', 'className', 'content']
 
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
-
-DropdownText.create = createShorthandFactory(DropdownText, (val) => ({ content: val }))
+DropdownText.create = createShorthandFactory(DropdownText, (val: React.ReactNode) => ({
+  content: val,
+}))
 
 export default DropdownText

@@ -9,7 +9,8 @@ import { first, inRange, isNil, some } from './utils'
  * @param {object} e - A SyntheticEvent or DOM Event.
  * @returns {boolean}
  */
-const doesNodeContainClick = (node, e) => {
+// `node` is a DOM node and `e` a SyntheticEvent or DOM Event, both may be missing
+const doesNodeContainClick = (node: any, e: any): boolean => {
   if (some([e, node], isNil)) {
     return false
   }

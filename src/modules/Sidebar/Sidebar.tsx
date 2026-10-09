@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   documentRef,
   doesNodeContainClick,
@@ -93,7 +91,7 @@ export interface StrictSidebarProps {
  *
  * @param {Boolean} visible
  */
-function useAnimationTick(visible): [number, () => void] {
+function useAnimationTick(visible: boolean | undefined): [number, () => void] {
   const previousVisible = usePrevious(visible)
   const tickIncrement = !!visible === !!previousVisible ? 0 : 1
 
@@ -131,8 +129,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((props, ref) => {
   const [animationTick, resetAnimationTick] = useAnimationTick(visible)
   const elementRef = useMergedRefs(ref, React.useRef(undefined))
 
-  const animationTimer = React.useRef(undefined)
-  const skipNextCallback = React.useRef(undefined)
+  const animationTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  const skipNextCallback = React.useRef<boolean>(undefined)
 
   const handleAnimationEnd = useEventCallback(() => {
     const callback = visible ? 'onShow' : 'onHidden'
@@ -155,10 +153,11 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((props, ref) => {
     invoke(props, callback, null, props)
   })
 
-  const handleDocumentClick = (e) => {
+  const handleDocumentClick = (e: MouseEvent) => {
     if (!doesNodeContainClick(elementRef.current, e)) {
       skipNextCallback.current = true
-      props?.onHide?.(e, { ...props, visible: false })
+      // Heads up! The public `onHide` typing declares a React event, but this is a native DOM event
+      props?.onHide?.(e as any, { ...props, visible: false })
     }
   }
 
@@ -201,73 +200,21 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((props, ref) => {
 }
 
 Sidebar.displayName = 'Sidebar'
-Sidebar.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Animation style. */
-  animation: PropTypes.oneOf([
-    'overlay',
-    'push',
-    'scale down',
-    'uncover',
-    'slide out',
-    'slide along',
-  ]),
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Direction the sidebar should appear on. */
-  direction: PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
-
-  /**
-   * Called before a sidebar begins to animate out.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onHide: PropTypes.func,
-
-  /**
-   * Called after a sidebar has finished animating out.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onHidden: PropTypes.func,
-
-  /**
-   * Called when a sidebar has finished animating in.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onShow: PropTypes.func,
-
-  /**
-   * Called when a sidebar begins animating in.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onVisible: PropTypes.func,
-
-  /** A sidebar can handle clicks on the passed element. */
-  target: PropTypes.oneOfType([customPropTypes.domNode, customPropTypes.refObject]),
-
-  /** Controls whether or not the sidebar is visible on the page. */
-  visible: PropTypes.bool,
-
-  /** Sidebar width. */
-  width: PropTypes.oneOf(['very thin', 'thin', 'wide', 'very wide']),
-}
+Sidebar.handledProps = [
+  'animation',
+  'as',
+  'children',
+  'className',
+  'content',
+  'direction',
+  'onHidden',
+  'onHide',
+  'onShow',
+  'onVisible',
+  'target',
+  'visible',
+  'width',
+]
 
 Sidebar.animationDuration = 500
 

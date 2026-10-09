@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getUnhandledProps } from '../../lib'
@@ -28,9 +27,6 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooterProps>(
 ) as ForwardRefComponent<TableFooterProps, HTMLTableSectionElement>
 
 TableFooter.displayName = 'TableFooter'
-TableFooter.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-}
+TableFooter.handledProps = ['as']
 
 export default TableFooter

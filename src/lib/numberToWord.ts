@@ -1,4 +1,4 @@
-export const numberToWordMap = {
+export const numberToWordMap: Record<number, string> = {
   1: 'one',
   2: 'two',
   3: 'three',
@@ -24,10 +24,10 @@ export const numberToWordMap = {
  * @param {string|number} value The value to convert to a word.
  * @returns {string}
  */
-export function numberToWord(value) {
+export function numberToWord(value: unknown): string | number {
   const type = typeof value
   if (type === 'string' || type === 'number') {
-    return numberToWordMap[value] || value
+    return numberToWordMap[value as number] || (value as string | number)
   }
 
   return ''

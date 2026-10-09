@@ -1,13 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  createShorthand,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { createShorthand, cx, getComponentType, getUnhandledProps } from '../../lib'
 import FeedContent from './FeedContent'
 import FeedLabel from './FeedLabel'
 import type { ForwardRefComponent, SemanticShorthandItem } from '../../generic'
@@ -82,39 +75,18 @@ const FeedEvent = React.forwardRef<HTMLDivElement, FeedEventProps>(function (pro
 }) as ForwardRefComponent<FeedEventProps, HTMLDivElement>
 
 FeedEvent.displayName = 'FeedEvent'
-FeedEvent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for FeedContent. */
-  content: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedDate. */
-  date: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedExtra with images. */
-  extraImages: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedExtra with content. */
-  extraText: customPropTypes.itemShorthand,
-
-  /** An event can contain icon label. */
-  icon: customPropTypes.itemShorthand,
-
-  /** An event can contain image label. */
-  image: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedMeta. */
-  meta: customPropTypes.itemShorthand,
-
-  /** Shorthand for FeedSummary. */
-  summary: customPropTypes.itemShorthand,
-}
+FeedEvent.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'date',
+  'extraImages',
+  'extraText',
+  'icon',
+  'image',
+  'meta',
+  'summary',
+]
 
 export default FeedEvent

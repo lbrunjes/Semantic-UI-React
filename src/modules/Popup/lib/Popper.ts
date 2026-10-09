@@ -1,4 +1,13 @@
 import { createPopper } from '@popperjs/core'
+import type {
+  Instance,
+  Modifier,
+  Options,
+  Placement,
+  PositioningStrategy,
+  State,
+  VirtualElement,
+} from '@popperjs/core'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
@@ -8,7 +17,9 @@ import { fromPairs, isEqual } from '../../../lib/utils'
 // A port of "Popper" & "usePopper()" from "react-popper" (v2.3.0, unmaintained, does not support
 // React 19), a thin React binding to "@popperjs/core".
 
-const EMPTY_MODIFIERS = []
+type PopperModifier = Partial<Modifier<any, any>>
+
+const EMPTY_MODIFIERS: PopperModifier[] = []
 
 const noop = () => undefined
 const noopPromise = () => Promise.resolve(null)
@@ -20,8 +31,12 @@ const noopPromise = () => Promise.resolve(null)
  * @param {HTMLElement} popperElement An element to position.
  * @param {Object} [options] Options for Popper.js.
  */
-export function usePopper(referenceElement, popperElement, options: any = {}) {
-  const prevOptions = React.useRef(null)
+export function usePopper(
+  referenceElement: Element | VirtualElement | null | undefined,
+  popperElement: HTMLElement | null | undefined,
+  options: any = {},
+) {
+  const prevOptions = React.useRef<Partial<Options> | null>(null)
 
   const optionsWithDefaults = {
     onFirstUpdate: options.onFirstUpdate,
@@ -44,7 +59,7 @@ export function usePopper(referenceElement, popperElement, options: any = {}) {
       name: 'updateState',
       enabled: true,
       phase: 'write',
-      fn: ({ state: popperState }) => {
+      fn: ({ state: popperState }: { state: State }) => {
         const elements = Object.keys(popperState.elements)
 
         ReactDOM.flushSync(() => {
@@ -64,7 +79,7 @@ export function usePopper(referenceElement, popperElement, options: any = {}) {
   )
 
   const popperOptions = React.useMemo(() => {
-    const newOptions = {
+    const newOptions: Partial<Options> = {
       onFirstUpdate: optionsWithDefaults.onFirstUpdate,
       placement: optionsWithDefaults.placement,
       strategy: optionsWithDefaults.strategy,
@@ -90,7 +105,7 @@ export function usePopper(referenceElement, popperElement, options: any = {}) {
     updateStateModifier,
   ])
 
-  const popperInstanceRef = React.useRef(undefined)
+  const popperInstanceRef = React.useRef<Instance | null | undefined>(undefined)
 
   useIsomorphicLayoutEffect(() => {
     if (popperInstanceRef.current) {
@@ -122,10 +137,34 @@ export function usePopper(referenceElement, popperElement, options: any = {}) {
   }
 }
 
+export interface PopperChildrenProps {
+  ref: React.Dispatch<React.SetStateAction<HTMLElement | null>>
+  style: React.CSSProperties
+  placement: Placement
+  hasPopperEscaped: boolean | null | undefined
+  isReferenceHidden: boolean | null | undefined
+  arrowProps: {
+    style: React.CSSProperties
+    ref: React.Dispatch<React.SetStateAction<HTMLElement | null>>
+  }
+  forceUpdate: () => void
+  update: () => Promise<Partial<State> | null>
+}
+
+export interface PopperProps {
+  placement?: Placement
+  strategy?: PositioningStrategy | null
+  modifiers?: PopperModifier[]
+  referenceElement?: Element | VirtualElement | null
+  onFirstUpdate?: (state: Partial<State>) => void
+  innerRef?: React.Ref<HTMLElement | null>
+  children: (childrenProps: PopperChildrenProps) => React.ReactNode
+}
+
 /**
  * Positions an element rendered by `children` (a render function) against `referenceElement`.
  */
-export function Popper(props) {
+export function Popper(props: PopperProps) {
   const {
     placement = 'bottom',
     strategy = 'absolute',
@@ -136,8 +175,8 @@ export function Popper(props) {
     children,
   } = props
 
-  const [popperElement, setPopperElement] = React.useState(null)
-  const [arrowElement, setArrowElement] = React.useState(null)
+  const [popperElement, setPopperElement] = React.useState<HTMLElement | null>(null)
+  const [arrowElement, setArrowElement] = React.useState<HTMLElement | null>(null)
 
   React.useEffect(() => {
     setRef(innerRef, popperElement)

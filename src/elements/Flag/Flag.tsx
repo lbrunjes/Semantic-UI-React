@@ -1,13 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  createShorthandFactory,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { createShorthandFactory, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { ForwardRefComponent } from '../../generic'
 
 export type FlagNameValues =
@@ -1031,16 +1024,7 @@ const Flag = React.forwardRef<HTMLElement, FlagProps>(function (props, ref) {
 }) as ForwardRefComponent<FlagProps, HTMLElement>
 
 Flag.displayName = 'Flag'
-Flag.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Flag name, can use the two digit country code, the full name, or a common alias. */
-  name: customPropTypes.suggest(names),
-}
+Flag.handledProps = ['as', 'className', 'name']
 
 // Heads up!
 // .create() factories should be defined on exported component to be visible as static properties

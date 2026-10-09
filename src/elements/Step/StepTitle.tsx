@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -46,19 +44,7 @@ const StepTitle = React.forwardRef<HTMLDivElement, StepTitleProps>(function (pro
 }) as ForwardRefComponent<StepTitleProps, HTMLDivElement>
 
 StepTitle.displayName = 'StepTitle'
-StepTitle.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+StepTitle.handledProps = ['as', 'children', 'className', 'content']
 
 StepTitle.create = createShorthandFactory(StepTitle, (content) => ({ content }))
 

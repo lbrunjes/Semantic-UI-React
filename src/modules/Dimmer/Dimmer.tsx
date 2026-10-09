@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { createShorthandFactory, getUnhandledProps, isBrowser } from '../../lib'
@@ -68,13 +67,7 @@ const Dimmer = React.forwardRef<HTMLDivElement, DimmerProps>(function (props, re
 }
 
 Dimmer.displayName = 'Dimmer'
-Dimmer.propTypes = {
-  /** An active dimmer will dim its parent container. */
-  active: PropTypes.bool,
-
-  /** A dimmer can be formatted to be fixed to the page. */
-  page: PropTypes.bool,
-}
+Dimmer.handledProps = ['active', 'page']
 
 Dimmer.Dimmable = DimmerDimmable
 Dimmer.Inner = DimmerInner

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps, useMergedRefs } from '../../lib'
@@ -43,14 +42,14 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(function (
   const { rows = 3, value } = props
   const elementRef = useMergedRefs(ref, React.useRef(undefined))
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e?.target?.value
 
     props?.onChange?.(e, { ...props, value: newValue })
   }
 
-  const handleInput = (e) => {
-    const newValue = e?.target?.value
+  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const newValue = (e?.target as HTMLTextAreaElement)?.value
 
     props?.onInput?.(e, { ...props, value: newValue })
   }
@@ -71,29 +70,6 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(function (
 }) as ForwardRefComponent<TextAreaProps, HTMLTextAreaElement>
 
 TextArea.displayName = 'TextArea'
-TextArea.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /**
-   * Called on change.
-   * @param {SyntheticEvent} event - The React SyntheticEvent object
-   * @param {object} data - All props and the event value.
-   */
-  onChange: PropTypes.func,
-
-  /**
-   * Called on input.
-   * @param {SyntheticEvent} event - The React SyntheticEvent object
-   * @param {object} data - All props and the event value.
-   */
-  onInput: PropTypes.func,
-
-  /** Indicates row count for a TextArea. */
-  rows: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** The value of the textarea. */
-  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-}
+TextArea.handledProps = ['as', 'onChange', 'onInput', 'rows', 'value']
 
 export default TextArea

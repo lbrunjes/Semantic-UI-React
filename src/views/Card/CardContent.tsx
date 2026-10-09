@@ -1,21 +1,17 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthand,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getTextAlignProp,
 } from '../../lib'
 import CardDescription from './CardDescription'
 import CardHeader from './CardHeader'
 import CardMeta from './CardMeta'
-import { without } from '../../lib/utils'
 import type {
   ForwardRefComponent,
   SemanticShorthandContent,
@@ -95,33 +91,16 @@ const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(function 
 }) as ForwardRefComponent<CardContentProps, HTMLDivElement>
 
 CardContent.displayName = 'CardContent'
-CardContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for CardDescription. */
-  description: customPropTypes.itemShorthand,
-
-  /** A card can contain extra content meant to be formatted separately from the main content. */
-  extra: PropTypes.bool,
-
-  /** Shorthand for CardHeader. */
-  header: customPropTypes.itemShorthand,
-
-  /** Shorthand for CardMeta. */
-  meta: customPropTypes.itemShorthand,
-
-  /** A card content can adjust its text alignment. */
-  textAlign: PropTypes.oneOf(without(SUI.TEXT_ALIGNMENTS, 'justified')),
-}
+CardContent.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'extra',
+  'header',
+  'meta',
+  'textAlign',
+]
 
 export default CardContent

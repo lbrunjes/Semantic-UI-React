@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import FeedContent from './FeedContent'
 import FeedDate from './FeedDate'
 import FeedEvent from './FeedEvent'
@@ -18,7 +10,7 @@ import FeedLike from './FeedLike'
 import FeedMeta from './FeedMeta'
 import FeedSummary from './FeedSummary'
 import FeedUser from './FeedUser'
-import { map, without } from '../../lib/utils'
+import { map } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticShorthandCollection } from '../../generic'
 import type { FeedEventProps } from './FeedEvent'
 
@@ -61,7 +53,7 @@ const Feed = React.forwardRef<HTMLDivElement, FeedProps>(function (props, ref) {
     )
   }
 
-  const eventElements = map(events, (eventProps) => {
+  const eventElements = map(events, (eventProps: FeedEventProps) => {
     const { childKey, date, meta, summary, ...eventData } = eventProps
     const finalKey = childKey ?? [date, meta, summary].join('-')
 
@@ -87,22 +79,7 @@ const Feed = React.forwardRef<HTMLDivElement, FeedProps>(function (props, ref) {
 }
 
 Feed.displayName = 'Feed'
-Feed.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand array of props for FeedEvent. */
-  events: customPropTypes.collectionShorthand,
-
-  /** A feed can have different sizes. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'mini', 'tiny', 'medium', 'big', 'huge', 'massive')),
-}
+Feed.handledProps = ['as', 'children', 'className', 'events', 'size']
 
 Feed.Content = FeedContent
 Feed.Date = FeedDate

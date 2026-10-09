@@ -1,20 +1,16 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   useEventCallback,
   getKeyOnly,
   getKeyOrValueAndKey,
   getValueAndKey,
 } from '../../lib'
 import IconGroup from './IconGroup'
-import { without } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticCOLORS, SemanticICONS } from '../../generic'
 
 export type IconSizeProp = 'mini' | 'tiny' | 'small' | 'large' | 'big' | 'huge' | 'massive'
@@ -78,8 +74,8 @@ export interface StrictIconProps {
   'aria-label'?: string
 }
 
-function getAriaProps(props) {
-  const ariaOptions = {}
+function getAriaProps(props: IconProps) {
+  const ariaOptions: Record<string, string> = {}
   const { 'aria-label': ariaLabel, 'aria-hidden': ariaHidden } = props
 
   if (ariaLabel == null) {
@@ -139,13 +135,12 @@ const Icon = React.forwardRef<HTMLElement, IconProps>(function (props, ref) {
   const ElementType = getComponentType(props, { defaultAs: 'i' })
   const ariaProps = getAriaProps(props)
 
-  const handleClick = useEventCallback((e) => {
+  const handleClick = useEventCallback((e: React.MouseEvent<HTMLElement>) => {
     if (disabled) {
       e.preventDefault()
       return
     }
 
-    // eslint-disable-next-line react/prop-types -- a DOM event handler, it is not declared in propTypes to be passed with other HTML props
     props?.onClick?.(e, props)
   })
 
@@ -157,61 +152,25 @@ const Icon = React.forwardRef<HTMLElement, IconProps>(function (props, ref) {
 }
 
 Icon.displayName = 'Icon'
-Icon.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Formatted to appear bordered. */
-  bordered: PropTypes.bool,
-
-  /** Icon can formatted to appear circular. */
-  circular: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Color of the icon. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** Icons can display a smaller corner icon. */
-  corner: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.oneOf(['top left', 'top right', 'bottom left', 'bottom right']),
-  ]),
-
-  /** Show that the icon is inactive. */
-  disabled: PropTypes.bool,
-
-  /** Fitted, without space to left or right of Icon. */
-  fitted: PropTypes.bool,
-
-  /** Icon can be flipped. */
-  flipped: PropTypes.oneOf(['horizontally', 'vertically']),
-
-  /** Formatted to have its colors inverted for contrast. */
-  inverted: PropTypes.bool,
-
-  /** Icon can be formatted as a link. */
-  link: PropTypes.bool,
-
-  /** Icon can be used as a simple loader. */
-  loading: PropTypes.bool,
-
-  /** Name of the icon. */
-  name: customPropTypes.suggest(SUI.ALL_ICONS_IN_ALL_CONTEXTS),
-
-  /** Icon can rotated. */
-  rotated: PropTypes.oneOf(['clockwise', 'counterclockwise']),
-
-  /** Size of the icon. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** Icon can have an aria label. */
-  'aria-hidden': PropTypes.string,
-
-  /** Icon can have an aria label. */
-  'aria-label': PropTypes.string,
-}
+Icon.handledProps = [
+  'aria-hidden',
+  'aria-label',
+  'as',
+  'bordered',
+  'circular',
+  'className',
+  'color',
+  'corner',
+  'disabled',
+  'fitted',
+  'flipped',
+  'inverted',
+  'link',
+  'loading',
+  'name',
+  'rotated',
+  'size',
+]
 
 // Heads up!
 // .create() factories should be defined on exported component to be visible as static properties

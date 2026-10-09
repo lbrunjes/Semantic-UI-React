@@ -1,15 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type {
   ForwardRefComponent,
   SemanticCOLORS,
@@ -73,30 +64,15 @@ const LabelGroup = React.forwardRef<HTMLDivElement, LabelGroupProps>(function (p
 }) as ForwardRefComponent<LabelGroupProps, HTMLDivElement>
 
 LabelGroup.displayName = 'LabelGroup'
-LabelGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Labels can share shapes. */
-  circular: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Label group can share colors together. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Label group can share sizes together. */
-  size: PropTypes.oneOf(SUI.SIZES),
-
-  /** Label group can share tag formatting. */
-  tag: PropTypes.bool,
-}
+LabelGroup.handledProps = [
+  'as',
+  'children',
+  'circular',
+  'className',
+  'color',
+  'content',
+  'size',
+  'tag',
+]
 
 export default LabelGroup

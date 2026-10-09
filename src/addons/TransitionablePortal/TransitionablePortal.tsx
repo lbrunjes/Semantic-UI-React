@@ -1,10 +1,9 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import Portal from '../Portal'
 import Transition from '../../modules/Transition'
 import { TRANSITION_STATUS_ENTERING } from '../../modules/Transition/utils/computeStatuses'
-import { getUnhandledProps, makeDebugger, useForceUpdate } from '../../lib'
+import { getUnhandledProps, useForceUpdate } from '../../lib'
 import type { TransitionEventData, TransitionProps } from '../../modules/Transition/Transition'
 import type { PortalProps } from '../Portal/Portal'
 
@@ -60,13 +59,13 @@ export interface TransitionablePortalState {
   transitionVisible: boolean
 }
 
-const debug = makeDebugger('transitionable_portal')
-
-function usePortalState(props) {
+function usePortalState(
+  props: TransitionablePortalProps,
+): [boolean, (value: boolean | number) => void] {
   const portalOpen = React.useRef<boolean | number>(false)
   const forceUpdate = useForceUpdate()
 
-  const setPortalOpen = React.useCallback((value) => {
+  const setPortalOpen = React.useCallback((value: boolean | number) => {
     portalOpen.current = value
     forceUpdate()
   }, [])
@@ -88,7 +87,8 @@ function usePortalState(props) {
       return [false, setPortalOpen]
     }
 
-    return [portalOpen.current, setPortalOpen]
+    // `-1` is handled above, the value is a boolean here
+    return [portalOpen.current as boolean, setPortalOpen]
   }
 
   return [props.open, setPortalOpen]
@@ -118,25 +118,20 @@ const TransitionablePortal = function TransitionablePortal(props: Transitionable
   // ----------------------------------------
 
   const handlePortalClose = () => {
-    debug('handlePortalClose()')
     setPortalOpen(-1)
   }
 
   const handlePortalOpen = () => {
-    debug('handlePortalOpen()')
     setPortalOpen(true)
   }
 
-  const handleTransitionHide = (nothing, data) => {
-    debug('handleTransitionHide()')
-
+  const handleTransitionHide = (nothing: null, data: TransitionEventData) => {
     setTransitionVisible(false)
     props?.onClose?.(null, { ...data, portalOpen: false, transitionVisible: false })
     props?.onHide?.(null, { ...data, portalOpen, transitionVisible: false })
   }
 
-  const handleTransitionStart = (nothing, data) => {
-    debug('handleTransitionStart()')
+  const handleTransitionStart = (nothing: null, data: TransitionEventData) => {
     const { status } = data
     const nextTransitionVisible = status === TRANSITION_STATUS_ENTERING
 
@@ -181,48 +176,15 @@ const TransitionablePortal = function TransitionablePortal(props: Transitionable
 }
 
 TransitionablePortal.displayName = 'TransitionablePortal'
-TransitionablePortal.propTypes = {
-  /** Primary content. */
-  children: PropTypes.node.isRequired,
-
-  /**
-   * Called when a close event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and internal state.
-   */
-  onClose: PropTypes.func,
-
-  /**
-   * Callback on each transition that changes visibility to hidden.
-   *
-   * @param {null}
-   * @param {object} data - All props with transition status and internal state.
-   */
-  onHide: PropTypes.func,
-
-  /**
-   * Called when an open event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and internal state.
-   */
-  onOpen: PropTypes.func,
-
-  /**
-   * Callback on animation start.
-   *
-   * @param {null}
-   * @param {object} data - All props with transition status and internal state.
-   */
-  onStart: PropTypes.func,
-
-  /** Controls whether or not the portal is displayed. */
-  open: PropTypes.bool,
-
-  /** Transition props. */
-  transition: PropTypes.object,
-}
+TransitionablePortal.handledProps = [
+  'children',
+  'onClose',
+  'onHide',
+  'onOpen',
+  'onStart',
+  'open',
+  'transition',
+]
 
 // The published typings declare it as a class component, so that type is kept
 export default TransitionablePortal as unknown as React.ComponentClass<TransitionablePortalProps>

@@ -1,16 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-  getTextAlignProp,
-} from '../../lib'
-import { without } from '../../lib/utils'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getTextAlignProp } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface CardMetaProps extends StrictCardMetaProps {
@@ -51,21 +41,6 @@ const CardMeta = React.forwardRef<HTMLDivElement, CardMetaProps>(function (props
 }) as ForwardRefComponent<CardMetaProps, HTMLDivElement>
 
 CardMeta.displayName = 'CardMeta'
-CardMeta.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A card meta can adjust its text alignment. */
-  textAlign: PropTypes.oneOf(without(SUI.TEXT_ALIGNMENTS, 'justified')),
-}
+CardMeta.handledProps = ['as', 'children', 'className', 'content', 'textAlign']
 
 export default CardMeta

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getComponentType, getUnhandledProps, getKeyOnly, keyboardKey } from '../../lib'
@@ -64,24 +63,26 @@ const RatingIcon = React.forwardRef<HTMLElement, RatingIconProps>(function (prop
   const rest = getUnhandledProps(RatingIcon, props)
   const ElementType = getComponentType(props, { defaultAs: 'i' })
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
     props?.onClick?.(e, props)
   }
 
-  const handleKeyUp = (e) => {
-    props?.onKeyUp?.(e, props)
+  // Heads up! The public `onKeyUp`/`onClick` typings declare a MouseEvent, but this handler
+  // receives a KeyboardEvent.
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLElement>) => {
+    props?.onKeyUp?.(e as any, props)
 
     switch (keyboardKey.getCode(e)) {
       case keyboardKey.Enter:
       case keyboardKey.Spacebar:
         e.preventDefault()
-        props?.onClick?.(e, props)
+        props?.onClick?.(e as any, props)
         break
       default:
     }
   }
 
-  const handleMouseEnter = (e) => {
+  const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
     props?.onMouseEnter?.(e, props)
   }
 
@@ -99,45 +100,15 @@ const RatingIcon = React.forwardRef<HTMLElement, RatingIconProps>(function (prop
 }) as ForwardRefComponent<RatingIconProps, HTMLElement>
 
 RatingIcon.displayName = 'RatingIcon'
-RatingIcon.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Indicates activity of an icon. */
-  active: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** An index of icon inside Rating. */
-  index: PropTypes.number,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * Called on keyup.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onKeyUp: PropTypes.func,
-
-  /**
-   * Called on mouseenter.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onMouseEnter: PropTypes.func,
-
-  /** Indicates selection of an icon. */
-  selected: PropTypes.bool,
-}
+RatingIcon.handledProps = [
+  'active',
+  'as',
+  'className',
+  'index',
+  'onClick',
+  'onKeyUp',
+  'onMouseEnter',
+  'selected',
+]
 
 export default RatingIcon

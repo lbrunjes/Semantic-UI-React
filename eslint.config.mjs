@@ -54,8 +54,6 @@ export default tseslint.config(
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
 
-      'react/forbid-foreign-prop-types': ['warn', { allowInPropTypes: true }],
-
       // Heads up! "recommended" of v7 also enables React Compiler rules, these are the original ones
       'react-hooks/exhaustive-deps': 'warn',
       'react-hooks/rules-of-hooks': 'error',
@@ -91,7 +89,6 @@ export default tseslint.config(
       'jsx-a11y/control-has-associated-label': 'off',
       'jsx-a11y/tabindex-no-positive': 'off',
       'react/display-name': 'off',
-      'react/forbid-foreign-prop-types': 'off',
       // Tests pass arbitrary props to check they are handled
       'react/no-unknown-property': 'off',
       'react/prop-types': 'off',
@@ -109,6 +106,8 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { caughtErrors: 'none' }],
       'no-unused-vars': 'off',
+      // Props are checked by TypeScript
+      'react/prop-types': 'off',
     },
   },
 

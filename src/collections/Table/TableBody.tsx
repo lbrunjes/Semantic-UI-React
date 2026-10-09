@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getComponentType, getUnhandledProps } from '../../lib'
@@ -34,15 +33,6 @@ const TableBody = React.forwardRef<HTMLTableSectionElement, TableBodyProps>(func
 }) as ForwardRefComponent<TableBodyProps, HTMLTableSectionElement>
 
 TableBody.displayName = 'TableBody'
-TableBody.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-}
+TableBody.handledProps = ['as', 'children', 'className']
 
 export default TableBody

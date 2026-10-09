@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { childrenUtils, customPropTypes, cx, getComponentType, getUnhandledProps } from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface CommentContentProps extends StrictCommentContentProps {
@@ -39,18 +38,6 @@ const CommentContent = React.forwardRef<HTMLDivElement, CommentContentProps>(fun
 }) as ForwardRefComponent<CommentContentProps, HTMLDivElement>
 
 CommentContent.displayName = 'CommentContent'
-CommentContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+CommentContent.handledProps = ['as', 'children', 'className', 'content']
 
 export default CommentContent

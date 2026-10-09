@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import PlaceholderHeader from './PlaceholderHeader'
 import PlaceholderImage from './PlaceholderImage'
 import PlaceholderLine from './PlaceholderLine'
@@ -67,25 +59,7 @@ const Placeholder = React.forwardRef<HTMLDivElement, PlaceholderProps>(function 
 }
 
 Placeholder.displayName = 'Placeholder'
-Placeholder.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A fluid placeholder takes up the width of its container. */
-  fluid: PropTypes.bool,
-
-  /** A placeholder can have their colors inverted. */
-  inverted: PropTypes.bool,
-}
+Placeholder.handledProps = ['as', 'children', 'className', 'content', 'fluid', 'inverted']
 
 Placeholder.Header = PlaceholderHeader
 Placeholder.Image = PlaceholderImage

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import type { ForwardRefComponent } from '../../generic'
@@ -33,15 +32,6 @@ const ButtonOr = React.forwardRef<HTMLDivElement, ButtonOrProps>(function (props
 }) as ForwardRefComponent<ButtonOrProps, HTMLDivElement>
 
 ButtonOr.displayName = 'ButtonOr'
-ButtonOr.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Or buttons can have their text localized, or adjusted by using the text prop. */
-  text: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-}
+ButtonOr.handledProps = ['as', 'className', 'text']
 
 export default ButtonOr

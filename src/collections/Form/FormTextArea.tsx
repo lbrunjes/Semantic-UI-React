@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
@@ -37,12 +36,6 @@ const FormTextArea = React.forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
 ) as ForwardRefComponent<FormTextAreaProps, HTMLTextAreaElement>
 
 FormTextArea.displayName = 'FormTextArea'
-FormTextArea.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-}
+FormTextArea.handledProps = ['as', 'control']
 
 export default FormTextArea

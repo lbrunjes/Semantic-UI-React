@@ -1,6 +1,5 @@
 import { act, fireEvent, render } from '@testing-library/react'
 import _ from 'lodash'
-import PropTypes from 'prop-types'
 import React from 'react'
 
 import * as common from 'test/specs/commonTests'
@@ -30,10 +29,6 @@ const getButton = (container) => container.querySelector('button')
 describe('Portal', () => {
   common.hasSubcomponents(Portal, [PortalInner])
   common.hasValidTypings(Portal, { forwardsRef: false })
-
-  it('propTypes.children should be required', () => {
-    expect(Portal.propTypes.children).toBe(PropTypes.node.isRequired)
-  })
 
   it('does not update state if portal is unmounted', () => {
     // Any state update on an unmounted component produces a React warning, warnings throw

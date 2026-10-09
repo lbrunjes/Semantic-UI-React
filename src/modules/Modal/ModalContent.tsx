@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -59,26 +57,10 @@ const ModalContent = React.forwardRef<HTMLDivElement, ModalContentProps>(functio
 }) as ForwardRefComponent<ModalContentProps, HTMLDivElement>
 
 ModalContent.displayName = 'ModalContent'
-ModalContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+ModalContent.handledProps = ['as', 'children', 'className', 'content', 'image', 'scrolling']
 
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A modal can contain image content. */
-  image: PropTypes.bool,
-
-  /** A modal can use the entire size of the screen. */
-  scrolling: PropTypes.bool,
-}
-
-ModalContent.create = createShorthandFactory(ModalContent, (content) => ({ content }))
+ModalContent.create = createShorthandFactory(ModalContent, (content: React.ReactNode) => ({
+  content,
+}))
 
 export default ModalContent

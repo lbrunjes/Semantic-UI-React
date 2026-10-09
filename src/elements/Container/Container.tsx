@@ -1,13 +1,10 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getTextAlignProp,
 } from '../../lib'
@@ -68,27 +65,6 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(function (pro
 }) as ForwardRefComponent<ContainerProps, HTMLDivElement>
 
 Container.displayName = 'Container'
-Container.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Container has no maximum width. */
-  fluid: PropTypes.bool,
-
-  /** Reduce maximum width to more naturally accommodate text. */
-  text: PropTypes.bool,
-
-  /** Align container text. */
-  textAlign: PropTypes.oneOf(SUI.TEXT_ALIGNMENTS),
-}
+Container.handledProps = ['as', 'children', 'className', 'content', 'fluid', 'text', 'textAlign']
 
 export default Container

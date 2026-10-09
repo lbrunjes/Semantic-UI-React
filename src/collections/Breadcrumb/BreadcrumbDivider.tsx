@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getUnhandledProps,
   getComponentType,
@@ -74,22 +72,7 @@ const BreadcrumbDivider = React.forwardRef<HTMLDivElement, BreadcrumbDividerProp
 ) as ForwardRefComponent<BreadcrumbDividerProps, HTMLDivElement>
 
 BreadcrumbDivider.displayName = 'BreadcrumbDivider'
-BreadcrumbDivider.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Render as an `Icon` component with `divider` class instead of a `div`. */
-  icon: customPropTypes.itemShorthand,
-}
+BreadcrumbDivider.handledProps = ['as', 'children', 'className', 'content', 'icon']
 
 BreadcrumbDivider.create = createShorthandFactory(BreadcrumbDivider, (icon) => ({ icon }))
 

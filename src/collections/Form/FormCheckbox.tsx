@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
@@ -38,12 +37,6 @@ const FormCheckbox = React.forwardRef<HTMLInputElement, FormCheckboxProps>((prop
 }) as ForwardRefComponent<FormCheckboxProps, HTMLInputElement>
 
 FormCheckbox.displayName = 'FormCheckbox'
-FormCheckbox.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-}
+FormCheckbox.handledProps = ['as', 'control']
 
 export default FormCheckbox

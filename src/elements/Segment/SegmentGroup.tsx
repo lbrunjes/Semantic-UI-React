@@ -1,16 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  SUI,
-  getKeyOnly,
-} from '../../lib'
-import { without } from '../../lib/utils'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 import type { SegmentSizeProp } from './Segment'
 
@@ -78,36 +68,17 @@ const SegmentGroup = React.forwardRef<HTMLDivElement, SegmentGroupProps>(functio
 }) as ForwardRefComponent<SegmentGroupProps, HTMLDivElement>
 
 SegmentGroup.displayName = 'SegmentGroup'
-SegmentGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A segment may take up only as much space as is necessary. */
-  compact: PropTypes.bool,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Formats content to be aligned horizontally. */
-  horizontal: PropTypes.bool,
-
-  /** Formatted to look like a pile of pages. */
-  piled: PropTypes.bool,
-
-  /** A segment group may be formatted to raise above the page. */
-  raised: PropTypes.bool,
-
-  /** A segment group can have different sizes. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** Formatted to show it contains multiple pages. */
-  stacked: PropTypes.bool,
-}
+SegmentGroup.handledProps = [
+  'as',
+  'children',
+  'className',
+  'compact',
+  'content',
+  'horizontal',
+  'piled',
+  'raised',
+  'size',
+  'stacked',
+]
 
 export default SegmentGroup

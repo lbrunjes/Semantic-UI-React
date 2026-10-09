@@ -1,16 +1,35 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import isBrowser from './isBrowser'
 
 /** A ref object pointing to `document`, a default target for listeners. */
-export const documentRef = { current: isBrowser() ? document : null }
+export const documentRef: React.RefObject<Document | null> = {
+  current: isBrowser() ? document : null,
+}
 
-const getWindowEvent = (target) => {
+// `window.event` is deprecated and missing in some typings, hence `any`
+const getWindowEvent = (target: any): Event | undefined => {
   if (!target) return undefined
   if (typeof target.window === 'object' && target.window === target) return target.event
 
   return target.ownerDocument?.defaultView?.event
+}
+
+export interface EventListenerProps {
+  /** Use the capture phase. */
+  capture?: boolean
+
+  /** A handler for the event, the latest one is always invoked. */
+  listener(e: Event): void
+
+  /** A DOM node to subscribe on. */
+  target?: EventTarget | null
+
+  /** A ref to a DOM node to subscribe on, takes precedence over `target`. */
+  targetRef?: React.RefObject<EventTarget | null | undefined>
+
+  /** The DOM event type. */
+  type: string
 }
 
 /**
@@ -24,7 +43,7 @@ const getWindowEvent = (target) => {
  * @param {React.RefObject} [props.targetRef] A ref to a DOM node to subscribe on, takes precedence.
  * @param {string} props.type The DOM event type.
  */
-function EventListener(props) {
+function EventListener(props: EventListenerProps) {
   const { capture = false, listener, target, targetRef, type } = props
 
   const latestListener = React.useRef(listener)
@@ -41,7 +60,7 @@ function EventListener(props) {
     // https://github.com/facebook/react/issues/20074
     let currentEvent = getWindowEvent(window)
 
-    const handler = (e) => {
+    const handler = (e: Event) => {
       if (e === currentEvent) {
         currentEvent = undefined
         return
@@ -66,21 +85,5 @@ function EventListener(props) {
 }
 
 EventListener.displayName = 'EventListener'
-EventListener.propTypes = {
-  /** Use the capture phase. */
-  capture: PropTypes.bool,
-
-  /** A handler for the event. */
-  listener: PropTypes.func.isRequired,
-
-  /** A DOM node to subscribe on. */
-  target: PropTypes.object,
-
-  /** A ref to a DOM node to subscribe on, takes precedence over `target`. */
-  targetRef: PropTypes.shape({ current: PropTypes.object }),
-
-  /** The DOM event type. */
-  type: PropTypes.string.isRequired,
-}
 
 export default EventListener

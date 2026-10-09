@@ -43,8 +43,7 @@
   "homepage": "http://127.0.0.1/semantic-ui-react#readme",
   "dependencies": {
     "@babel/runtime": "^8.0.7",
-    "@popperjs/core": "^2.11.8",
-    "prop-types": "^15.8.1"
+    "@popperjs/core": "^2.11.8"
   },
   "devDependencies": {
     "@babel/cli": "^8.0.6",
@@ -59,11 +58,8 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
-    "babel-plugin-filter-imports": "^4.0.0",
+    "@types/react-dom": "^19.3.0",
     "babel-plugin-transform-next-use-client": "^1.1.1",
-    "babel-plugin-transform-react-handled-props": "^2.1.0",
-    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
-    "debug": "^4.4.3",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",

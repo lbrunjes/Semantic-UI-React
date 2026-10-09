@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -51,22 +49,7 @@ const StatisticValue = React.forwardRef<HTMLDivElement, StatisticValueProps>(fun
 }) as ForwardRefComponent<StatisticValueProps, HTMLDivElement>
 
 StatisticValue.displayName = 'StatisticValue'
-StatisticValue.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Format the value with smaller font size to fit nicely beside number values. */
-  text: PropTypes.bool,
-}
+StatisticValue.handledProps = ['as', 'children', 'className', 'content', 'text']
 
 StatisticValue.create = createShorthandFactory(StatisticValue, (content) => ({ content }))
 

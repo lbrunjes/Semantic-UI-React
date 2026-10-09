@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -53,22 +51,7 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
 ) as ForwardRefComponent<AccordionContentProps, HTMLDivElement>
 
 AccordionContent.displayName = 'AccordionContent'
-AccordionContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Whether or not the content is visible. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+AccordionContent.handledProps = ['active', 'as', 'children', 'className', 'content']
 
 AccordionContent.create = createShorthandFactory(AccordionContent, (content) => ({ content }))
 

@@ -13,7 +13,7 @@ import useIsomorphicLayoutEffect from './useIsomorphicLayoutEffect'
  *
  * @param {Function} fn The callback function that will be used
  */
-export default function useEventCallback(fn) {
+export default function useEventCallback<T extends (...args: any[]) => any>(fn: T): T {
   const callbackRef = React.useRef<(...args: any[]) => any>(() => {
     if (process.env.NODE_ENV !== 'production') {
       throw new Error('Cannot call an event handler while rendering...')
@@ -25,11 +25,11 @@ export default function useEventCallback(fn) {
   }, [fn])
 
   return React.useCallback(
-    (...args) => {
+    (...args: Parameters<T>): ReturnType<T> => {
       const callback = callbackRef.current
 
       return callback(...args)
     },
     [callbackRef],
-  )
+  ) as T
 }

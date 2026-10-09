@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -46,20 +44,10 @@ const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(function 
 }) as ForwardRefComponent<ModalHeaderProps, HTMLDivElement>
 
 ModalHeader.displayName = 'ModalHeader'
-ModalHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
+ModalHeader.handledProps = ['as', 'children', 'className', 'content']
 
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
-
-ModalHeader.create = createShorthandFactory(ModalHeader, (content) => ({ content }))
+ModalHeader.create = createShorthandFactory(ModalHeader, (content: React.ReactNode) => ({
+  content,
+}))
 
 export default ModalHeader

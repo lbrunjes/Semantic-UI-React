@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   createShorthandFactory,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getKeyOrValueAndKey,
   getValueAndKey,
@@ -139,7 +136,7 @@ export interface StrictButtonProps {
  * @param {React.ElementType} ElementType
  * @param {String} role
  */
-function computeButtonAriaRole(ElementType, role) {
+function computeButtonAriaRole(ElementType: React.ElementType, role: string | undefined) {
   if (role != null) {
     return role
   }
@@ -154,7 +151,11 @@ function computeButtonAriaRole(ElementType, role) {
  * @param {Boolean} disabled
  * @param {Number} tabIndex
  */
-function computeTabIndex(ElementType, disabled, tabIndex) {
+function computeTabIndex(
+  ElementType: React.ElementType,
+  disabled: boolean | undefined,
+  tabIndex: number | string | undefined,
+) {
   if (tabIndex != null) {
     return tabIndex
   }
@@ -166,7 +167,7 @@ function computeTabIndex(ElementType, disabled, tabIndex) {
   }
 }
 
-function hasIconClass(props) {
+function hasIconClass(props: ButtonProps) {
   const { children, content, icon, labelPosition } = props
 
   if (icon === true) {
@@ -247,7 +248,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function (props,
   })
   const tabIndex = computeTabIndex(ElementType, disabled, props.tabIndex)
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled) {
       e.preventDefault()
       return
@@ -274,7 +275,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function (props,
           className={buttonClasses}
           aria-pressed={toggle ? !!active : undefined}
           disabled={disabled}
-          tabIndex={tabIndex}
+          // `tabIndex` can be a string, React accepts it at runtime
+          tabIndex={tabIndex as number | undefined}
           type={type}
           ref={elementRef}
         >
@@ -313,128 +315,37 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function (props,
 }
 
 Button.displayName = 'Button'
-Button.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A button can show it is currently the active user selection. */
-  active: PropTypes.bool,
-
-  /** A button can animate to show hidden content. */
-  animated: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['fade', 'vertical'])]),
-
-  /** A button can be attached to other content. */
-  attached: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.oneOf(['left', 'right', 'top', 'bottom']),
-  ]),
-
-  /** A basic button is less pronounced. */
-  basic: PropTypes.bool,
-
-  /** Primary content. */
-  children: customPropTypes.every([
-    PropTypes.node,
-    customPropTypes.disallow(['label']),
-    customPropTypes.givenProps(
-      {
-        icon: PropTypes.oneOfType([
-          PropTypes.string.isRequired,
-          PropTypes.object.isRequired,
-          PropTypes.element.isRequired,
-        ]),
-      },
-      customPropTypes.disallow(['icon']),
-    ),
-  ]),
-
-  /** A button can be circular. */
-  circular: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A button can have different colors */
-  color: PropTypes.oneOf([
-    ...SUI.COLORS,
-    'facebook',
-    'google plus',
-    'instagram',
-    'linkedin',
-    'twitter',
-    'vk',
-    'youtube',
-  ]),
-
-  /** A button can reduce its padding to fit into tighter spaces. */
-  compact: PropTypes.bool,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A button can show it is currently unable to be interacted with. */
-  disabled: PropTypes.bool,
-
-  /** A button can be aligned to the left or right of its container. */
-  floated: PropTypes.oneOf(SUI.FLOATS),
-
-  /** A button can take the width of its container. */
-  fluid: PropTypes.bool,
-
-  /** Add an Icon by name, props object, or pass an <Icon />. */
-  icon: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.string,
-    PropTypes.object,
-    PropTypes.element,
-  ]),
-
-  /** A button can be formatted to appear on dark backgrounds. */
-  inverted: PropTypes.bool,
-
-  /** Add a Label by text, props object, or pass a <Label />. */
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.element]),
-
-  /** A labeled button can format a Label or Icon to appear on the left or right. */
-  labelPosition: PropTypes.oneOf(['right', 'left']),
-
-  /** A button can show a loading indicator. */
-  loading: PropTypes.bool,
-
-  /** A button can hint towards a negative consequence. */
-  negative: PropTypes.bool,
-
-  /**
-   * Called after user's click.
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /** A button can hint towards a positive consequence. */
-  positive: PropTypes.bool,
-
-  /** A button can be formatted to show different levels of emphasis. */
-  primary: PropTypes.bool,
-
-  /** The role of the HTML element. */
-  role: PropTypes.string,
-
-  /** A button can be formatted to show different levels of emphasis. */
-  secondary: PropTypes.bool,
-
-  /** A button can have different sizes. */
-  size: PropTypes.oneOf(SUI.SIZES),
-
-  /** A button can receive focus. */
-  tabIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** A button can be formatted to toggle on and off. */
-  toggle: PropTypes.bool,
-
-  /** The type of the HTML element. */
-  type: PropTypes.oneOf(['button', 'submit', 'reset']),
-}
+Button.handledProps = [
+  'active',
+  'animated',
+  'as',
+  'attached',
+  'basic',
+  'children',
+  'circular',
+  'className',
+  'color',
+  'compact',
+  'content',
+  'disabled',
+  'floated',
+  'fluid',
+  'icon',
+  'inverted',
+  'label',
+  'labelPosition',
+  'loading',
+  'negative',
+  'onClick',
+  'positive',
+  'primary',
+  'role',
+  'secondary',
+  'size',
+  'tabIndex',
+  'toggle',
+  'type',
+]
 
 Button.Content = ButtonContent
 Button.Group = ButtonGroup

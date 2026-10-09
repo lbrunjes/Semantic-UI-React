@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 export interface SearchCategoryLayoutProps extends StrictSearchCategoryLayoutProps {
@@ -26,12 +25,6 @@ const SearchCategoryLayout: React.FC<SearchCategoryLayoutProps> = function Searc
   )
 }
 
-SearchCategoryLayout.propTypes = {
-  /** The rendered category content */
-  categoryContent: PropTypes.element.isRequired,
-
-  /** The rendered results content */
-  resultsContent: PropTypes.element.isRequired,
-}
+SearchCategoryLayout.handledProps = ['categoryContent', 'resultsContent']
 
 export default SearchCategoryLayout

@@ -1,17 +1,16 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   useAutoControlledValue,
 } from '../../lib'
 import RatingIcon from './RatingIcon'
-import { times, without } from '../../lib/utils'
+import { times } from '../../lib/utils'
 import type { ForwardRefComponent } from '../../generic'
+import type { RatingIconProps } from './RatingIcon'
 
 export interface RatingProps extends StrictRatingProps {
   [key: string]: any
@@ -84,7 +83,8 @@ const Rating = React.forwardRef<HTMLDivElement, RatingProps>(function (props, re
   const rest = getUnhandledProps(Rating, props)
   const ElementType = getComponentType(props)
 
-  const handleIconClick = (e, { index }) => {
+  // Heads up! `index` is always set on icons rendered below, hence the non-null assertions.
+  const handleIconClick = (e: React.MouseEvent<HTMLElement>, { index }: RatingIconProps) => {
     if (disabled) {
       return
     }
@@ -92,7 +92,7 @@ const Rating = React.forwardRef<HTMLDivElement, RatingProps>(function (props, re
     // default newRating is the clicked icon
     // allow toggling a binary rating
     // allow clearing ratings
-    let newRating = index + 1
+    let newRating = index! + 1
 
     if (clearable === 'auto' && maxRating === 1) {
       newRating = +!rating
@@ -104,20 +104,20 @@ const Rating = React.forwardRef<HTMLDivElement, RatingProps>(function (props, re
     setRating(newRating)
     setIsSelecting(false)
 
-    props?.onRate?.(e, { ...props, rating: newRating })
+    // The public `onRate` typing declares an HTMLDivElement event, icons are `<i>` elements
+    props?.onRate?.(e as React.MouseEvent<HTMLDivElement>, { ...props, rating: newRating })
   }
 
-  const handleIconMouseEnter = (e, { index }) => {
+  const handleIconMouseEnter = (e: React.MouseEvent<HTMLElement>, { index }: RatingIconProps) => {
     if (disabled) {
       return
     }
 
-    setSelectedIndex(index)
+    setSelectedIndex(index!)
     setIsSelecting(true)
   }
 
-  const handleMouseLeave = (...args) => {
-    // eslint-disable-next-line react/prop-types -- a DOM event handler, it is not declared in propTypes to be passed with other HTML props
+  const handleMouseLeave = (...args: any[]) => {
     props?.onMouseLeave?.(...args)
 
     if (disabled) {
@@ -159,46 +159,18 @@ const Rating = React.forwardRef<HTMLDivElement, RatingProps>(function (props, re
 }
 
 Rating.displayName = 'Rating'
-Rating.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /**
-   * You can clear the rating by clicking on the current start rating.
-   * By default a rating will be only clearable if there is 1 icon.
-   * Setting to `true`/`false` will allow or disallow a user to clear their rating.
-   */
-  clearable: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['auto'])]),
-
-  /** The initial rating value. */
-  defaultRating: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** You can disable or enable interactive rating.  Makes a read-only rating. */
-  disabled: PropTypes.bool,
-
-  /** A rating can use a set of star or heart icons. */
-  icon: PropTypes.oneOf(['star', 'heart']),
-
-  /** The total number of icons. */
-  maxRating: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /**
-   * Called after user selects a new rating.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and proposed rating.
-   */
-  onRate: PropTypes.func,
-
-  /** The current number of active icons. */
-  rating: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** A progress bar can vary in size. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium', 'big')),
-}
+Rating.handledProps = [
+  'as',
+  'className',
+  'clearable',
+  'defaultRating',
+  'disabled',
+  'icon',
+  'maxRating',
+  'onRate',
+  'rating',
+  'size',
+]
 
 Rating.Icon = RatingIcon
 

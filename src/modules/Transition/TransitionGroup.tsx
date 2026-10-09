@@ -1,19 +1,12 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  getComponentType,
-  getUnhandledProps,
-  makeDebugger,
-  SUI,
-  useEventCallback,
-  useForceUpdate,
-} from '../../lib'
+import { getComponentType, getUnhandledProps, useEventCallback, useForceUpdate } from '../../lib'
 import { getChildMapping, mergeChildMappings } from './utils/childMapping'
+import type { ChildMapping } from './utils/childMapping'
 import wrapChild from './utils/wrapChild'
 import { forEach, mapValues, values } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticTRANSITIONS } from '../../generic'
-import type { TransitionPropDuration } from './Transition'
+import type { TransitionEventData, TransitionPropDuration } from './Transition'
 
 export interface TransitionGroupProps extends StrictTransitionGroupProps {
   [key: string]: any
@@ -36,8 +29,6 @@ export interface StrictTransitionGroupProps {
   duration?: number | string | TransitionPropDuration
 }
 
-const debug = makeDebugger('transition_group')
-
 /**
  * Wraps all children elements with proper callbacks and props.
  *
@@ -48,28 +39,31 @@ const debug = makeDebugger('transition_group')
  *
  * @return {Object}
  */
-function useWrappedChildren(children, animation, duration, directional) {
-  debug('wrapChildren()')
-
+function useWrappedChildren(
+  children: React.ReactNode,
+  animation: TransitionGroupProps['animation'],
+  duration: TransitionGroupProps['duration'],
+  directional: TransitionGroupProps['directional'],
+) {
   const forceUpdate = useForceUpdate()
-  const previousChildren = React.useRef(undefined)
+  const previousChildren = React.useRef<ChildMapping | undefined>(undefined)
 
-  let wrappedChildren
+  let wrappedChildren: ChildMapping
   React.useEffect(() => {
     previousChildren.current = wrappedChildren
   })
 
-  const handleChildHide = useEventCallback((nothing, childProps) => {
-    debug('handleOnHide', childProps)
+  const handleChildHide = useEventCallback((nothing: null, childProps: TransitionEventData) => {
     const { reactKey } = childProps
 
-    delete previousChildren.current[reactKey]
+    // The callback is only called by children rendered from a previous mapping, so it is set
+    delete previousChildren.current![reactKey!]
     forceUpdate()
   })
 
   // A short circuit for an initial render as there will be no `prevMapping`
   if (typeof previousChildren.current === 'undefined') {
-    wrappedChildren = mapValues(getChildMapping(children), (child) =>
+    wrappedChildren = mapValues(getChildMapping(children), (child: React.ReactElement<any>) =>
       wrapChild(child, handleChildHide, {
         animation,
         duration,
@@ -80,11 +74,12 @@ function useWrappedChildren(children, animation, duration, directional) {
     const nextMapping = getChildMapping(children)
     wrappedChildren = mergeChildMappings(previousChildren.current, nextMapping)
 
-    forEach(wrappedChildren, (child, key) => {
-      const hasPrev = previousChildren.current[key]
+    forEach(wrappedChildren, (child: React.ReactElement<any>, key: string) => {
+      // `previousChildren.current` is defined in this branch, narrowing is lost in the callback
+      const hasPrev = previousChildren.current![key]
       const hasNext = nextMapping[key]
 
-      const prevChild = previousChildren.current[key]
+      const prevChild = previousChildren.current![key]
       const isLeaving = !prevChild?.props?.visible
 
       // Heads up!
@@ -132,9 +127,6 @@ function useWrappedChildren(children, animation, duration, directional) {
  */
 const TransitionGroup = React.forwardRef<HTMLDivElement, TransitionGroupProps>(
   function (props, ref) {
-    debug('render')
-    debug('props', props)
-
     const children = useWrappedChildren(
       props.children,
       props.animation ?? 'fade',
@@ -154,28 +146,6 @@ const TransitionGroup = React.forwardRef<HTMLDivElement, TransitionGroupProps>(
 ) as ForwardRefComponent<TransitionGroupProps, HTMLDivElement>
 
 TransitionGroup.displayName = 'TransitionGroup'
-TransitionGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Named animation event to used. Must be defined in CSS. */
-  animation: PropTypes.oneOfType([PropTypes.oneOf(SUI.TRANSITIONS), PropTypes.string]),
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Whether it is directional animation event or not. Use it only for custom transitions. */
-  directional: PropTypes.bool,
-
-  /** Duration of the CSS transition animation in milliseconds. */
-  duration: PropTypes.oneOfType([
-    PropTypes.number,
-    PropTypes.shape({
-      hide: PropTypes.number.isRequired,
-      show: PropTypes.number.isRequired,
-    }),
-    PropTypes.string,
-  ]),
-}
+TransitionGroup.handledProps = ['animation', 'as', 'children', 'directional', 'duration']
 
 export default TransitionGroup

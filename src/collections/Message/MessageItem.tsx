@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -47,19 +45,7 @@ const MessageItem = React.forwardRef<HTMLLIElement, MessageItemProps>(function (
 }) as ForwardRefComponent<MessageItemProps, HTMLLIElement>
 
 MessageItem.displayName = 'MessageItem'
-MessageItem.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-}
+MessageItem.handledProps = ['as', 'children', 'className', 'content']
 
 MessageItem.create = createShorthandFactory(MessageItem, (content) => ({ content }))
 

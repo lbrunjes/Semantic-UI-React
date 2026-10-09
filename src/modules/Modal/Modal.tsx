@@ -1,16 +1,13 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   doesNodeContainClick,
   eventStack,
   getComponentType,
   getUnhandledProps,
   isBrowser,
-  makeDebugger,
   getKeyOnly,
   shallowEqual,
   useAutoControlledValue,
@@ -28,6 +25,8 @@ import { includes, isPlainObject, pick, reduce } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticShorthandItem } from '../../generic'
 import type { StrictPortalProps } from '../../addons/Portal'
 import type { ModalActionsProps } from './ModalActions'
+import type { ButtonProps } from '../../elements/Button'
+import type { IconProps } from '../../elements/Icon'
 import type { ModalContentProps } from './ModalContent'
 import type { ModalDimmerProps } from './ModalDimmer'
 import type { ModalHeaderProps } from './ModalHeader'
@@ -135,8 +134,6 @@ export interface StrictModalProps extends StrictPortalProps {
   trigger?: React.ReactNode
 }
 
-const debug = makeDebugger('modal')
-
 /**
  * A modal displays content that temporarily blocks interactions with the main view of a site.
  * @see Confirm
@@ -169,20 +166,21 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
     initialState: false,
   })
 
-  const [legacyStyles, setLegacyStyles] = React.useState({})
+  const [legacyStyles, setLegacyStyles] = React.useState<React.CSSProperties>({})
   const [scrolling, setScrolling] = React.useState(false)
 
   const [legacy] = React.useState(() => isBrowser() && isLegacy())
 
   const elementRef = useMergedRefs(ref, React.useRef(undefined))
-  const dimmerRef = React.useRef(undefined)
+  const dimmerRef = React.useRef<HTMLElement | undefined>(undefined)
 
-  const animationRequestId = React.useRef(undefined)
-  const latestDocumentMouseDownEvent = React.useRef(undefined)
+  const animationRequestId = React.useRef<number | undefined>(undefined)
+  const latestDocumentMouseDownEvent = React.useRef<MouseEvent | null | undefined>(undefined)
 
   React.useEffect(() => {
     return () => {
-      cancelAnimationFrame(animationRequestId.current)
+      // `cancelAnimationFrame()` ignores `undefined` (no frame was requested)
+      cancelAnimationFrame(animationRequestId.current as number)
       latestDocumentMouseDownEvent.current = null
     }
   }, [])
@@ -213,20 +211,16 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
   // Document Event Handlers
   // ----------------------------------------
 
-  const handleClose = (e) => {
-    debug('close()')
-
+  const handleClose = (e: React.MouseEvent<HTMLElement>) => {
     setOpen(false)
     props?.onClose?.(e, { ...props, open: false })
   }
 
-  const handleDocumentMouseDown = (e) => {
+  const handleDocumentMouseDown = (e: MouseEvent) => {
     latestDocumentMouseDownEvent.current = e
   }
 
-  const handleDocumentClick = (e) => {
-    debug('handleDocumentClick()')
-
+  const handleDocumentClick = (e: MouseEvent) => {
     const currentDocumentMouseDownEvent = latestDocumentMouseDownEvent.current
     latestDocumentMouseDownEvent.current = null
 
@@ -238,19 +232,16 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
       return
 
     setOpen(false)
-    props?.onClose?.(e, { ...props, open: false })
+    // A DOM event is passed, the public type of `onClose()` declares a React event
+    props?.onClose?.(e as unknown as React.MouseEvent<HTMLElement>, { ...props, open: false })
   }
 
-  const handleOpen = (e) => {
-    debug('open()')
-
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
     setOpen(true)
     props?.onOpen?.(e, { ...props, open: true })
   }
 
-  const handlePortalMount = (e) => {
-    debug('handlePortalMount()', { eventPool })
-
+  const handlePortalMount = (e: null) => {
     setScrolling(false)
     setPositionAndClassNames()
 
@@ -265,10 +256,8 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
     props?.onMount?.(e, props)
   }
 
-  const handlePortalUnmount = (e) => {
-    debug('handlePortalUnmount()', { eventPool })
-
-    cancelAnimationFrame(animationRequestId.current)
+  const handlePortalUnmount = (e: null) => {
+    cancelAnimationFrame(animationRequestId.current as number)
     eventStack.unsub('mousedown', handleDocumentMouseDown, {
       pool: eventPool,
       target: dimmerRef.current,
@@ -284,7 +273,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
   // Render
   // ----------------------------------------
 
-  const renderContent = (rest) => {
+  const renderContent = (rest: Record<string, any>) => {
     const classes = cx(
       'ui',
       size,
@@ -298,8 +287,8 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
 
     const closeIconName = closeIcon === true ? 'close' : closeIcon
     const closeIconJSX = Icon.create(closeIconName, {
-      overrideProps: (predefinedProps) => ({
-        onClick: (e) => {
+      overrideProps: (predefinedProps: IconProps) => ({
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
           predefinedProps?.onClick?.(e)
           handleClose(e)
         },
@@ -319,8 +308,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
             {ModalHeader.create(header, { autoGenerateKey: false })}
             {ModalContent.create(content, { autoGenerateKey: false })}
             {ModalActions.create(actions, {
-              overrideProps: (predefinedProps) => ({
-                onActionClick: (e, actionProps) => {
+              overrideProps: (predefinedProps: ModalActionsProps) => ({
+                onActionClick: (
+                  e: React.MouseEvent<HTMLAnchorElement>,
+                  actionProps: ButtonProps,
+                ) => {
                   predefinedProps?.onActionClick?.(e, actionProps)
                   props?.onActionClick?.(e, props)
 
@@ -342,11 +334,12 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
   }
 
   const unhandled = getUnhandledProps(Modal, props)
-  const portalPropNames = Portal.handledProps
+  // Portal always defines its handled props
+  const portalPropNames = Portal.handledProps!
 
   const rest = reduce(
     unhandled,
-    (acc, val, key) => {
+    (acc: Record<string, any>, val: unknown, key: string) => {
       if (!includes(portalPropNames, key)) acc[key] = val
 
       return acc
@@ -404,114 +397,32 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(function (props, ref)
 }
 
 Modal.displayName = 'Modal'
-Modal.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Shorthand for Modal.Actions. Typically an array of button shorthand. */
-  actions: customPropTypes.itemShorthand,
-
-  /** A modal can reduce its complexity */
-  basic: PropTypes.bool,
-
-  /** A modal can be vertically centered in the viewport */
-  centered: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for the close icon. Closes the modal on click. */
-  closeIcon: PropTypes.oneOfType([PropTypes.node, PropTypes.object, PropTypes.bool]),
-
-  /** Whether or not the Modal should close when the dimmer is clicked. */
-  closeOnDimmerClick: PropTypes.bool,
-
-  /** Whether or not the Modal should close when the document is clicked. */
-  closeOnDocumentClick: PropTypes.bool,
-
-  /** Simple text content for the Modal. */
-  content: customPropTypes.itemShorthand,
-
-  /** Initial value of open. */
-  defaultOpen: PropTypes.bool,
-
-  /** A Modal can appear in a dimmer. */
-  dimmer: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.func,
-    PropTypes.object,
-    PropTypes.oneOf(['inverted', 'blurring']),
-  ]),
-
-  /** Event pool namespace that is used to handle component events */
-  eventPool: PropTypes.string,
-
-  /** Modal displayed above the content in bold. */
-  header: customPropTypes.itemShorthand,
-
-  /** The node where the modal should mount. Defaults to document.body. */
-  mountNode: PropTypes.any,
-
-  /**
-   * Action onClick handler when using shorthand `actions`.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onActionClick: PropTypes.func,
-
-  /**
-   * Called when a close event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClose: PropTypes.func,
-
-  /**
-   * Called when the modal is mounted on the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onMount: PropTypes.func,
-
-  /**
-   * Called when an open event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onOpen: PropTypes.func,
-
-  /**
-   * Called when the modal is unmounted from the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onUnmount: PropTypes.func,
-
-  /** Controls whether or not the Modal is displayed. */
-  open: PropTypes.bool,
-
-  /** A modal can vary in size */
-  size: PropTypes.oneOf(['mini', 'tiny', 'small', 'large', 'fullscreen']),
-
-  /** Custom styles. */
-  style: PropTypes.object,
-
-  /** Element to be rendered in-place where the modal is defined. */
-  trigger: PropTypes.node,
-
-  /**
-   * NOTE: Any unhandled props that are defined in Modal are passed-through
-   * to the inner Portal.
-   */
-}
+Modal.handledProps = [
+  'actions',
+  'as',
+  'basic',
+  'centered',
+  'children',
+  'className',
+  'closeIcon',
+  'closeOnDimmerClick',
+  'closeOnDocumentClick',
+  'content',
+  'defaultOpen',
+  'dimmer',
+  'eventPool',
+  'header',
+  'mountNode',
+  'onActionClick',
+  'onClose',
+  'onMount',
+  'onOpen',
+  'onUnmount',
+  'open',
+  'size',
+  'style',
+  'trigger',
+]
 
 Modal.Actions = ModalActions
 Modal.Content = ModalContent

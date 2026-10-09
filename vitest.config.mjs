@@ -6,13 +6,10 @@ const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url))
 
 export default defineConfig({
   plugins: [
-    // Our sources use JSX in ".js" files and rely on "babel-plugin-transform-react-handled-props"
-    // at runtime (see "getUnhandledProps()"), other plugins from ".babel-preset.js" are only needed
-    // for builds.
+    // Tests use JSX in ".js" files, plugins from ".babel-preset.js" are only needed for builds
     babel({
       include: /[\\/](src|test)[\\/].+\.(js|tsx?)$/,
       presets: [['@babel/preset-react', { runtime: 'classic' }], '@babel/preset-typescript'],
-      plugins: ['transform-react-handled-props'],
     }),
   ],
   resolve: {

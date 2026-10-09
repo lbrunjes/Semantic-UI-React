@@ -1,7 +1,13 @@
 import getMenuOptions from './getMenuOptions'
+import type { GetMenuOptionsConfig } from './getMenuOptions'
+import type { DropdownItemProps } from '../DropdownItem'
+
+export interface GetSelectedIndexConfig extends GetMenuOptionsConfig {
+  selectedIndex?: number
+}
 import { find, findIndex, includes, reduce } from '../../../lib/utils'
 
-export default function getSelectedIndex(config) {
+export default function getSelectedIndex(config: GetSelectedIndexConfig): number | undefined {
   const {
     additionLabel,
     additionPosition,
@@ -29,14 +35,14 @@ export default function getSelectedIndex(config) {
   })
   const enabledIndexes = reduce(
     menuOptions,
-    (memo, item, index) => {
+    (memo: number[], item: DropdownItemProps, index: number) => {
       if (!item.disabled) memo.push(index)
       return memo
     },
-    [],
+    [] as number[],
   )
 
-  let newSelectedIndex
+  let newSelectedIndex: number | undefined
 
   // update the selected index
   if (!selectedIndex || selectedIndex < 0) {
@@ -49,11 +55,12 @@ export default function getSelectedIndex(config) {
       ? firstIndex
       : findIndex(menuOptions, ['value', value]) || enabledIndexes[0]
   } else if (multiple) {
-    newSelectedIndex = find(enabledIndexes, (index) => index >= selectedIndex)
+    newSelectedIndex = find(enabledIndexes, (index: number) => index >= selectedIndex)
 
     // multiple selects remove options from the menu as they are made active
     // keep the selected index within range of the remaining items
-    if (selectedIndex >= menuOptions.length - 1) {
+    // for `multiple`, getMenuOptions() always returns an array (built by `filter()`)
+    if (selectedIndex >= menuOptions!.length - 1) {
       newSelectedIndex = enabledIndexes[enabledIndexes.length - 1]
     }
   } else {

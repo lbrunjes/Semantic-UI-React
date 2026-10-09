@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { cx, makeDebugger, normalizeTransitionDuration, SUI, getKeyOnly } from '../../lib'
+import { cx, normalizeTransitionDuration, SUI, getKeyOnly } from '../../lib'
 import TransitionGroup from './TransitionGroup'
 import {
   computeStatuses,
@@ -95,13 +94,11 @@ interface TransitionComponent extends React.ComponentClass<TransitionProps> {
   Group: typeof TransitionGroup
 }
 
-const debug = makeDebugger('transition')
-
-const TRANSITION_CALLBACK_TYPE = {
+const TRANSITION_CALLBACK_TYPE: Record<string, string> = {
   [TRANSITION_STATUS_ENTERED]: 'show',
   [TRANSITION_STATUS_EXITED]: 'hide',
 }
-const TRANSITION_STYLE_TYPE = {
+const TRANSITION_STYLE_TYPE: Record<string, string> = {
   [TRANSITION_STATUS_ENTERING]: 'show',
   [TRANSITION_STATUS_EXITING]: 'hide',
 }
@@ -122,7 +119,7 @@ const Transition = class Transition extends React.Component<TransitionProps, any
   // Lifecycle
   // ----------------------------------------
 
-  static getDerivedStateFromProps(props, state) {
+  static getDerivedStateFromProps(props: TransitionProps, state: any) {
     const derivedState = computeStatuses({
       mountOnShow: props.mountOnShow,
       status: state.status,
@@ -131,23 +128,18 @@ const Transition = class Transition extends React.Component<TransitionProps, any
       unmountOnHide: props.unmountOnHide,
     })
 
-    debug('getDerivedStateFromProps()', props, state, derivedState)
-
     return derivedState
   }
 
   componentDidMount() {
-    debug('componentDidMount()')
     this.updateStatus({})
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    debug('componentDidUpdate()')
+  componentDidUpdate(prevProps: TransitionProps, prevState: any) {
     this.updateStatus(prevState)
   }
 
   componentWillUnmount() {
-    debug('componentWillUnmount()')
     clearTimeout(this.timeoutId)
   }
 
@@ -155,7 +147,7 @@ const Transition = class Transition extends React.Component<TransitionProps, any
   // Callback handling
   // ----------------------------------------
 
-  handleStart = (nextStatus) => {
+  handleStart = (nextStatus: string) => {
     const { duration } = this.props
 
     const durationType = TRANSITION_CALLBACK_TYPE[nextStatus]
@@ -168,7 +160,7 @@ const Transition = class Transition extends React.Component<TransitionProps, any
     }
   }
 
-  updateStatus = (prevState) => {
+  updateStatus = (prevState: any) => {
     if (prevState.status !== this.state.status) {
       // Timeout should be cleared in any case as previous can lead set to unexpected `nextStatus`
       clearTimeout(this.timeoutId)
@@ -234,9 +226,6 @@ const Transition = class Transition extends React.Component<TransitionProps, any
   // ----------------------------------------
 
   render() {
-    debug('render(): props', this.props)
-    debug('render(): state', this.state)
-
     const { children } = this.props
     const { nextStatus, status } = this.state
 
@@ -255,73 +244,21 @@ const Transition = class Transition extends React.Component<TransitionProps, any
   }
 }
 
-Transition.propTypes = {
-  /** Named animation event to used. Must be defined in CSS. */
-  animation: PropTypes.oneOfType([PropTypes.oneOf(SUI.TRANSITIONS), PropTypes.string]),
-
-  /** Primary content. */
-  children: PropTypes.element.isRequired,
-
-  /** Whether it is directional animation event or not. Use it only for custom transitions. */
-  directional: PropTypes.bool,
-
-  /** Duration of the CSS transition animation in milliseconds. */
-  duration: PropTypes.oneOfType([
-    PropTypes.number,
-    PropTypes.shape({
-      hide: PropTypes.number,
-      show: PropTypes.number,
-    }),
-    PropTypes.string,
-  ]),
-
-  /** Show the component; triggers the enter or exit animation. */
-  visible: PropTypes.bool,
-
-  /** Wait until the first "enter" transition to mount the component (add it to the DOM). */
-  mountOnShow: PropTypes.bool,
-
-  /**
-   * Callback on each transition that changes visibility to shown.
-   *
-   * @param {null}
-   * @param {object} data - All props with status.
-   */
-  onComplete: PropTypes.func,
-
-  /**
-   * Callback on each transition that changes visibility to hidden.
-   *
-   * @param {null}
-   * @param {object} data - All props with status.
-   */
-  onHide: PropTypes.func,
-
-  /**
-   * Callback on each transition that changes visibility to shown.
-   *
-   * @param {null}
-   * @param {object} data - All props with status.
-   */
-  onShow: PropTypes.func,
-
-  /**
-   * Callback on animation start.
-   *
-   * @param {null}
-   * @param {object} data - All props with status.
-   */
-  onStart: PropTypes.func,
-
-  /** React's key of the element. */
-  reactKey: PropTypes.string,
-
-  /** Run the enter animation when the component mounts, if it is initially shown. */
-  transitionOnMount: PropTypes.bool,
-
-  /** Unmount the component (remove it from the DOM) when it is not shown. */
-  unmountOnHide: PropTypes.bool,
-}
+Transition.handledProps = [
+  'animation',
+  'children',
+  'directional',
+  'duration',
+  'mountOnShow',
+  'onComplete',
+  'onHide',
+  'onShow',
+  'onStart',
+  'reactKey',
+  'transitionOnMount',
+  'unmountOnHide',
+  'visible',
+]
 
 Transition.defaultProps = {
   animation: 'fade',

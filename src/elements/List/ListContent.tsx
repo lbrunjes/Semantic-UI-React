@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getValueAndKey,
   getVerticalAlignProp,
 } from '../../lib'
@@ -87,31 +84,16 @@ const ListContent = React.forwardRef<HTMLDivElement, ListContentProps>(function 
 }) as ForwardRefComponent<ListContentProps, HTMLDivElement>
 
 ListContent.displayName = 'ListContent'
-ListContent.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for ListDescription. */
-  description: customPropTypes.itemShorthand,
-
-  /** An list content can be floated left or right. */
-  floated: PropTypes.oneOf(SUI.FLOATS),
-
-  /** Shorthand for ListHeader. */
-  header: customPropTypes.itemShorthand,
-
-  /** An element inside a list can be vertically aligned. */
-  verticalAlign: PropTypes.oneOf(SUI.VERTICAL_ALIGNMENTS),
-}
+ListContent.handledProps = [
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'floated',
+  'header',
+  'verticalAlign',
+]
 
 ListContent.create = createShorthandFactory(ListContent, (content) => ({ content }))
 

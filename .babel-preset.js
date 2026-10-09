@@ -41,7 +41,6 @@ module.exports = (api) => {
 
   const isESBuild = envName === 'build-es'
   const isUMDBuild = envName === 'build-umd'
-  const isLibBuild = envName === 'build' || isESBuild || isUMDBuild
 
   const plugins = [
     [
@@ -57,25 +56,7 @@ module.exports = (api) => {
         customClientImports: ['useAutoControlledValue', 'useEventCallback', 'useMergedRefs'],
       },
     ],
-    'transform-react-handled-props',
-    [
-      'transform-react-remove-prop-types',
-      {
-        mode: isUMDBuild ? 'remove' : 'wrap',
-        removeImport: isUMDBuild,
-      },
-    ],
-    // A plugin for removal of debug in production builds
-    isLibBuild && [
-      'filter-imports',
-      {
-        imports: {
-          './makeDebugger': ['default'],
-          '../../lib': ['makeDebugger'],
-        },
-      },
-    ],
-  ].filter(Boolean)
+  ]
 
   return {
     assumptions,

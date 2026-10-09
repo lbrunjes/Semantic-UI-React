@@ -1,6 +1,8 @@
+import type { Placement } from '@popperjs/core'
+
 import { invert, keys } from '../../../lib/utils'
 
-export const positionsMapping = {
+export const positionsMapping: Record<string, Placement> = {
   'top center': 'top',
   'top left': 'top-start',
   'top right': 'top-end',
@@ -15,4 +17,4 @@ export const positionsMapping = {
 
 export const positions = keys(positionsMapping)
 
-export const placementMapping = invert(positionsMapping)
+export const placementMapping: Record<string, string> = invert(positionsMapping)

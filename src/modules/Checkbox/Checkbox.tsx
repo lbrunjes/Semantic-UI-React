@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   createHTMLLabel,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
   htmlInputAttrs,
-  makeDebugger,
   partitionHTMLProps,
   getKeyOnly,
   useAutoControlledValue,
@@ -109,8 +106,6 @@ export interface StrictCheckboxProps {
   value?: number | string
 }
 
-const debug = makeDebugger('checkbox')
-
 /**
  * A checkbox allows a user to select a value from a small set of options, often binary.
  * @see Form
@@ -144,9 +139,9 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
   })
 
   const inputRef = useMergedRefs(React.useRef(undefined), ref)
-  const labelRef = React.useRef(undefined)
+  const labelRef = React.useRef<HTMLLabelElement>(undefined)
 
-  const isClickFromMouse = React.useRef(undefined)
+  const isClickFromMouse = React.useRef<boolean>(undefined)
 
   // ----------------------------------------
   // Effects
@@ -181,12 +176,10 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
   // Handlers
   // ----------------------------------------
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
     if (!canToggle()) {
       return
     }
-
-    debug('handleChange()', e?.target?.tagName)
 
     props?.onChange?.(e, {
       ...props,
@@ -197,11 +190,9 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
     setIndeterminate(false)
   }
 
-  const handleClick = (e) => {
-    debug('handleClick()', e?.target?.tagName)
-
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
     const isInputClick = inputRef.current?.contains?.(e.target)
-    const isLabelClick = labelRef.current?.contains?.(e.target)
+    const isLabelClick = labelRef.current?.contains?.(e.target as Node)
     const isRootClick = !isLabelClick && !isInputClick
 
     const hasId = id != null
@@ -236,9 +227,7 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
     }
   }
 
-  const handleMouseDown = (e) => {
-    debug('handleMouseDown()')
-
+  const handleMouseDown = (e: React.MouseEvent<HTMLInputElement>) => {
     props?.onMouseDown?.(e, {
       ...props,
       checked: !!checked,
@@ -254,9 +243,7 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
     e.preventDefault()
   }
 
-  const handleMouseUp = (e) => {
-    debug('handleMouseUp()')
-
+  const handleMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
     isClickFromMouse.current = true
     props?.onMouseUp?.(e, {
       ...props,
@@ -323,92 +310,29 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(function (props
 }) as ForwardRefComponent<CheckboxProps, HTMLDivElement>
 
 Checkbox.displayName = 'Checkbox'
-Checkbox.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Whether or not checkbox is checked. */
-  checked: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** The initial value of checked. */
-  defaultChecked: PropTypes.bool,
-
-  /** Whether or not checkbox is indeterminate. */
-  defaultIndeterminate: PropTypes.bool,
-
-  /** A checkbox can appear disabled and be unable to change states */
-  disabled: PropTypes.bool,
-
-  /** Removes padding for a label. Auto applied when there is no label. */
-  fitted: PropTypes.bool,
-
-  /** A unique identifier. */
-  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Whether or not checkbox is indeterminate. */
-  indeterminate: PropTypes.bool,
-
-  /** The text of the associated label element. */
-  label: customPropTypes.itemShorthand,
-
-  /** The HTML input name. */
-  name: PropTypes.string,
-
-  /**
-   * Called when the user attempts to change the checked state.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and proposed checked/indeterminate state.
-   */
-  onChange: PropTypes.func,
-
-  /**
-   * Called when the checkbox or label is clicked.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and current checked/indeterminate state.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * Called when the user presses down on the mouse.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and current checked/indeterminate state.
-   */
-  onMouseDown: PropTypes.func,
-
-  /**
-   * Called when the user releases the mouse.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and current checked/indeterminate state.
-   */
-  onMouseUp: PropTypes.func,
-
-  /** Format as a radio element. This means it is an exclusive option. */
-  radio: customPropTypes.every([PropTypes.bool, customPropTypes.disallow(['slider', 'toggle'])]),
-
-  /** A checkbox can be read-only and unable to change states. */
-  readOnly: PropTypes.bool,
-
-  /** Format to emphasize the current selection state. */
-  slider: customPropTypes.every([PropTypes.bool, customPropTypes.disallow(['radio', 'toggle'])]),
-
-  /** A checkbox can receive focus. */
-  tabIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Format to show an on or off choice. */
-  toggle: customPropTypes.every([PropTypes.bool, customPropTypes.disallow(['radio', 'slider'])]),
-
-  /** HTML input type, either checkbox or radio. */
-  type: PropTypes.oneOf(['checkbox', 'radio']),
-
-  /** The HTML input value. */
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-}
+Checkbox.handledProps = [
+  'as',
+  'checked',
+  'className',
+  'defaultChecked',
+  'defaultIndeterminate',
+  'disabled',
+  'fitted',
+  'id',
+  'indeterminate',
+  'label',
+  'name',
+  'onChange',
+  'onClick',
+  'onMouseDown',
+  'onMouseUp',
+  'radio',
+  'readOnly',
+  'slider',
+  'tabIndex',
+  'toggle',
+  'type',
+  'value',
+]
 
 export default Checkbox

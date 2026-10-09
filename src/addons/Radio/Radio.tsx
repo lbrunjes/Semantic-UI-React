@@ -38,15 +38,6 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(function (props, re
 }) as ForwardRefComponent<RadioProps, HTMLInputElement>
 
 Radio.displayName = 'Radio'
-Radio.propTypes = {
-  /** Format to emphasize the current selection state. */
-  slider: Checkbox.propTypes.slider,
-
-  /** Format to show an on or off choice. */
-  toggle: Checkbox.propTypes.toggle,
-
-  /** HTML input type, either checkbox or radio. */
-  type: Checkbox.propTypes.type,
-}
+Radio.handledProps = ['slider', 'toggle', 'type']
 
 export default Radio

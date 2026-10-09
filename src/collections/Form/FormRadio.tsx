@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
@@ -38,12 +37,6 @@ const FormRadio = React.forwardRef<HTMLInputElement, FormRadioProps>(function (p
 }) as ForwardRefComponent<FormRadioProps, HTMLInputElement>
 
 FormRadio.displayName = 'FormRadio'
-FormRadio.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-}
+FormRadio.handledProps = ['as', 'control']
 
 export default FormRadio

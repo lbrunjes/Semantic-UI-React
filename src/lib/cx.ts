@@ -1,4 +1,4 @@
-const toClassName = (value) => {
+const toClassName = (value: unknown): string => {
   if (!value) return ''
 
   if (typeof value === 'string' || typeof value === 'number') return `${value}`
@@ -7,14 +7,14 @@ const toClassName = (value) => {
 
   if (typeof value === 'object') {
     return Object.keys(value)
-      .filter((key) => value[key])
+      .filter((key) => (value as Record<string, unknown>)[key])
       .join(' ')
   }
 
   return ''
 }
 
-const toClassNames = (values) => {
+const toClassNames = (values: ArrayLike<unknown>): string => {
   let result = ''
 
   for (let i = 0; i < values.length; i += 1) {
@@ -36,6 +36,6 @@ const toClassNames = (values) => {
  * @param {...*} args Values to build a className from.
  * @returns {string}
  */
-export default function cx(...args) {
+export default function cx(...args: unknown[]): string {
   return toClassNames(args)
 }

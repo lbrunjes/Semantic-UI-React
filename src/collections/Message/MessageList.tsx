@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -50,19 +48,7 @@ const MessageList = React.forwardRef<HTMLUListElement, MessageListProps>(functio
 }) as ForwardRefComponent<MessageListProps, HTMLUListElement>
 
 MessageList.displayName = 'MessageList'
-MessageList.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand Message.Items. */
-  items: customPropTypes.collectionShorthand,
-}
+MessageList.handledProps = ['as', 'children', 'className', 'items']
 
 MessageList.create = createShorthandFactory(MessageList, (val) => ({ items: val }))
 

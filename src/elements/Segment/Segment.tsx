@@ -1,13 +1,10 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getKeyOrValueAndKey,
   getTextAlignProp,
@@ -15,7 +12,6 @@ import {
 } from '../../lib'
 import SegmentGroup from './SegmentGroup'
 import SegmentInline from './SegmentInline'
-import { without } from '../../lib/utils'
 import type {
   ForwardRefComponent,
   SemanticCOLORS,
@@ -176,78 +172,31 @@ Segment.Group = SegmentGroup
 Segment.Inline = SegmentInline
 
 Segment.displayName = 'Segment'
-Segment.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Attach segment to other content, like a header. */
-  attached: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['top', 'bottom'])]),
-
-  /** A basic segment has no special formatting. */
-  basic: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** A segment can be circular. */
-  circular: PropTypes.bool,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A segment can clear floated content. */
-  clearing: PropTypes.bool,
-
-  /** Segment can be colored. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** A segment may take up only as much space as is necessary. */
-  compact: PropTypes.bool,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A segment may show its content is disabled. */
-  disabled: PropTypes.bool,
-
-  /** Segment content can be floated to the left or right. */
-  floated: PropTypes.oneOf(SUI.FLOATS),
-
-  /** A segment can have its colors inverted for contrast. */
-  inverted: PropTypes.bool,
-
-  /** A segment may show its content is being loaded. */
-  loading: PropTypes.bool,
-
-  /** A segment can increase its padding. */
-  padded: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['very'])]),
-
-  /** A segment can be used to reserve space for conditionally displayed content. */
-  placeholder: PropTypes.bool,
-
-  /** Formatted to look like a pile of pages. */
-  piled: PropTypes.bool,
-
-  /** A segment may be formatted to raise above the page. */
-  raised: PropTypes.bool,
-
-  /** A segment can be formatted to appear less noticeable. */
-  secondary: PropTypes.bool,
-
-  /** A segment can have different sizes. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** Formatted to show it contains multiple pages. */
-  stacked: PropTypes.bool,
-
-  /** A segment can be formatted to appear even less noticeable. */
-  tertiary: PropTypes.bool,
-
-  /** Formats content to be aligned as part of a vertical group. */
-  textAlign: PropTypes.oneOf(without(SUI.TEXT_ALIGNMENTS, 'justified')),
-
-  /** Formats content to be aligned vertically. */
-  vertical: PropTypes.bool,
-}
+Segment.handledProps = [
+  'as',
+  'attached',
+  'basic',
+  'children',
+  'circular',
+  'className',
+  'clearing',
+  'color',
+  'compact',
+  'content',
+  'disabled',
+  'floated',
+  'inverted',
+  'loading',
+  'padded',
+  'piled',
+  'placeholder',
+  'raised',
+  'secondary',
+  'size',
+  'stacked',
+  'tertiary',
+  'textAlign',
+  'vertical',
+]
 
 export default Segment

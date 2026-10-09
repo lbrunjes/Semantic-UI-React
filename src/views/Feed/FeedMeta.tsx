@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  createShorthand,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-} from '../../lib'
+import { childrenUtils, createShorthand, cx, getComponentType, getUnhandledProps } from '../../lib'
 import FeedLike from './FeedLike'
 import type {
   ForwardRefComponent,
@@ -65,21 +57,6 @@ const FeedMeta = React.forwardRef<HTMLDivElement, FeedMetaProps>(function (props
 }) as ForwardRefComponent<FeedMetaProps, HTMLDivElement>
 
 FeedMeta.displayName = 'FeedMeta'
-FeedMeta.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for FeedLike. */
-  like: customPropTypes.itemShorthand,
-}
+FeedMeta.handledProps = ['as', 'children', 'className', 'content', 'like']
 
 export default FeedMeta

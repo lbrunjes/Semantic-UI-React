@@ -1,4 +1,10 @@
 /**
+ * A handler subscribed via the event stack. It receives a DOM event, its exact type depends on the
+ * event name (i.e. `KeyboardEvent` for "keydown").
+ */
+export type EventHandler = (event: any) => void
+
+/**
  * An immutable set of event handlers, grouped by event type, that belong to a single pool.
  *
  * The "default" pool dispatches an event to all its handlers, any other pool dispatches it only to
@@ -7,21 +13,21 @@
  */
 export default class EventPool {
   declare poolName: string
-  declare handlerSets: Map<any, any[]>
+  declare handlerSets: Map<string, EventHandler[]>
 
-  constructor(poolName: string, handlerSets: Map<any, any[]>) {
+  constructor(poolName: string, handlerSets: Map<string, EventHandler[]>) {
     this.poolName = poolName
     this.handlerSets = handlerSets
   }
 
-  static createByType(poolName, eventType, eventHandlers) {
-    const handlerSets = new Map()
+  static createByType(poolName: string, eventType: string, eventHandlers: EventHandler[]) {
+    const handlerSets = new Map<string, EventHandler[]>()
     handlerSets.set(eventType, eventHandlers)
 
     return new EventPool(poolName, handlerSets)
   }
 
-  addHandlers(eventType, eventHandlers) {
+  addHandlers(eventType: string, eventHandlers: EventHandler[]) {
     const handlerSets = new Map(this.handlerSets)
     const currentHandlers = handlerSets.get(eventType) || []
 
@@ -30,7 +36,7 @@ export default class EventPool {
     return new EventPool(this.poolName, handlerSets)
   }
 
-  dispatchEvent(eventType, event) {
+  dispatchEvent(eventType: string, event: Event) {
     const handlers = this.handlerSets.get(eventType)
 
     if (!handlers || handlers.length === 0) return
@@ -41,7 +47,7 @@ export default class EventPool {
     }
 
     // Dispatches from the most recent handler, a handler that was added multiple times is called once
-    const called = new Set()
+    const called = new Set<EventHandler>()
 
     for (let i = handlers.length - 1; i >= 0; i -= 1) {
       if (!called.has(handlers[i])) {
@@ -51,14 +57,14 @@ export default class EventPool {
     }
   }
 
-  hasHandlers(eventType?) {
+  hasHandlers(eventType?: string) {
     if (!eventType) return this.handlerSets.size > 0
 
     const handlers = this.handlerSets.get(eventType)
     return !!handlers && handlers.length > 0
   }
 
-  removeHandlers(eventType, eventHandlers) {
+  removeHandlers(eventType: string, eventHandlers: EventHandler[]) {
     const handlerSets = new Map(this.handlerSets)
     const currentHandlers = handlerSets.get(eventType)
 

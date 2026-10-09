@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getKeyOrValueAndKey,
   useEventCallback,
@@ -119,7 +116,7 @@ const MenuItem = React.forwardRef<HTMLDivElement, MenuItemProps>(function (props
   })
   const rest = getUnhandledProps(MenuItem, props)
 
-  const handleClick = useEventCallback((e) => {
+  const handleClick = useEventCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!disabled) {
       props?.onClick?.(e, props)
     }
@@ -142,58 +139,23 @@ const MenuItem = React.forwardRef<HTMLDivElement, MenuItemProps>(function (props
 }) as ForwardRefComponent<MenuItemProps, HTMLDivElement>
 
 MenuItem.displayName = 'MenuItem'
-MenuItem.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A menu item can be active. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Additional colors can be specified. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A menu item can be disabled. */
-  disabled: PropTypes.bool,
-
-  /** A menu item or menu can remove element padding, vertically or horizontally. */
-  fitted: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['horizontally', 'vertically'])]),
-
-  /** A menu item may include a header or may itself be a header. */
-  header: PropTypes.bool,
-
-  /** MenuItem can be only icon. */
-  icon: PropTypes.oneOfType([PropTypes.bool, customPropTypes.itemShorthand]),
-
-  /** MenuItem index inside Menu. */
-  index: PropTypes.number,
-
-  /** A menu item can be link. */
-  link: PropTypes.bool,
-
-  /** Internal name of the MenuItem. */
-  name: PropTypes.string,
-
-  /**
-   * Called on click. When passed, the component will render as an `a`
-   * tag by default instead of a `div`.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /** A menu item can take left or right position. */
-  position: PropTypes.oneOf(['left', 'right']),
-}
+MenuItem.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'color',
+  'content',
+  'disabled',
+  'fitted',
+  'header',
+  'icon',
+  'index',
+  'link',
+  'name',
+  'onClick',
+  'position',
+]
 
 MenuItem.create = createShorthandFactory(MenuItem, (val) => ({ content: val, name: val }))
 

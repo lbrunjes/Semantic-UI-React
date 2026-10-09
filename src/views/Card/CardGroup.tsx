@@ -1,19 +1,16 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getTextAlignProp,
   getWidthProp,
 } from '../../lib'
 import Card from './Card'
-import { map, without } from '../../lib/utils'
+import { map } from '../../lib/utils'
 import type {
   ForwardRefComponent,
   SemanticShorthandCollection,
@@ -102,7 +99,7 @@ const CardGroup = React.forwardRef<HTMLDivElement, CardGroupProps>(function (pro
     )
   }
 
-  const itemsJSX = map(items, (item) => {
+  const itemsJSX = map(items, (item: CardProps) => {
     const key = item.key ?? [item.header, item.description].join('-')
     return <Card key={key} {...item} />
   })
@@ -115,36 +112,17 @@ const CardGroup = React.forwardRef<HTMLDivElement, CardGroupProps>(function (pro
 }) as ForwardRefComponent<CardGroupProps, HTMLDivElement>
 
 CardGroup.displayName = 'CardGroup'
-CardGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A group of cards can center itself inside its container. */
-  centered: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A group of cards can double its column width for mobile. */
-  doubling: PropTypes.bool,
-
-  /** Shorthand array of props for Card. */
-  items: customPropTypes.collectionShorthand,
-
-  /** A group of cards can set how many cards should exist in a row. */
-  itemsPerRow: PropTypes.oneOf(SUI.WIDTHS),
-
-  /** A group of cards can automatically stack rows to a single columns on mobile devices. */
-  stackable: PropTypes.bool,
-
-  /** A card group can adjust its text alignment. */
-  textAlign: PropTypes.oneOf(without(SUI.TEXT_ALIGNMENTS, 'justified')),
-}
+CardGroup.handledProps = [
+  'as',
+  'centered',
+  'children',
+  'className',
+  'content',
+  'doubling',
+  'items',
+  'itemsPerRow',
+  'stackable',
+  'textAlign',
+]
 
 export default CardGroup

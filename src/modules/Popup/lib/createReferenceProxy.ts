@@ -1,10 +1,12 @@
+import type * as React from 'react'
+
 import { isRefObject } from '../../../lib'
 import { memoize } from '../../../lib/utils'
 
 class ReferenceProxy {
   declare ref: any
 
-  constructor(refObject) {
+  constructor(refObject: React.RefObject<any>) {
     this.ref = refObject
   }
 
@@ -37,7 +39,8 @@ class ReferenceProxy {
  * @see https://popper.js.org/popper-documentation.html#referenceObject
  */
 const createReferenceProxy = memoize(
-  (reference) => new ReferenceProxy(isRefObject(reference) ? reference : { current: reference }),
+  (reference: unknown) =>
+    new ReferenceProxy(isRefObject(reference) ? reference : { current: reference }),
 )
 
 export default createReferenceProxy

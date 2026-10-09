@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -65,23 +63,10 @@ const DropdownHeader = React.forwardRef<HTMLDivElement, DropdownHeaderProps>(fun
 }) as ForwardRefComponent<DropdownHeaderProps, HTMLDivElement>
 
 DropdownHeader.displayName = 'DropdownHeader'
-DropdownHeader.propTypes = {
-  /** An element type to render as (string or function) */
-  as: PropTypes.elementType,
+DropdownHeader.handledProps = ['as', 'children', 'className', 'content', 'icon']
 
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Shorthand for Icon. */
-  icon: customPropTypes.itemShorthand,
-}
-
-DropdownHeader.create = createShorthandFactory(DropdownHeader, (content) => ({ content }))
+DropdownHeader.create = createShorthandFactory(DropdownHeader, (content: React.ReactNode) => ({
+  content,
+}))
 
 export default DropdownHeader

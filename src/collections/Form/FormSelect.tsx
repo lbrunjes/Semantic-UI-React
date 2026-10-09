@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { getComponentType, getUnhandledProps } from '../../lib'
 import Select from '../../addons/Select'
-import Dropdown from '../../modules/Dropdown'
 import FormField from './FormField'
 import type { StrictSelectProps } from '../../addons/Select'
 import type { DropdownItemProps } from '../../modules/Dropdown/DropdownItem'
@@ -43,15 +41,6 @@ const FormSelect = React.forwardRef<HTMLDivElement, FormSelectProps>(function (p
 }) as ForwardRefComponent<FormSelectProps, HTMLDivElement>
 
 FormSelect.displayName = 'FormSelect'
-FormSelect.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A FormField control prop. */
-  control: FormField.propTypes.control,
-
-  /** Array of Dropdown.Item props e.g. `{ text: '', value: '' }` */
-  options: PropTypes.arrayOf(PropTypes.shape(Dropdown.Item.propTypes)).isRequired,
-}
+FormSelect.handledProps = ['as', 'control', 'options']
 
 export default FormSelect

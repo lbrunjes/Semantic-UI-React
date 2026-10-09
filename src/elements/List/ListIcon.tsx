@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { createShorthandFactory, cx, getUnhandledProps, SUI, getVerticalAlignProp } from '../../lib'
+import { createShorthandFactory, cx, getUnhandledProps, getVerticalAlignProp } from '../../lib'
 import Icon from '../Icon/Icon'
 import type { ForwardRefComponent, SemanticVERTICALALIGNMENTS } from '../../generic'
 import type { StrictIconProps } from '../Icon'
@@ -30,13 +29,7 @@ const ListIcon = React.forwardRef<HTMLElement, ListIconProps>(function (props, r
 }) as ForwardRefComponent<ListIconProps, HTMLElement>
 
 ListIcon.displayName = 'ListIcon'
-ListIcon.propTypes = {
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** An element inside a list can be vertically aligned. */
-  verticalAlign: PropTypes.oneOf(SUI.VERTICAL_ALIGNMENTS),
-}
+ListIcon.handledProps = ['className', 'verticalAlign']
 
 ListIcon.create = createShorthandFactory(ListIcon, (name) => ({ name }))
 

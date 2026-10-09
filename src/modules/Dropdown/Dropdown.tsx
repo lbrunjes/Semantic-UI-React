@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import React, { Children, cloneElement, createRef } from 'react'
 
 import {
@@ -7,12 +6,9 @@ import {
   keyboardKey,
   ModernAutoControlledComponent as Component,
   childrenUtils,
-  customPropTypes,
   doesNodeContainClick,
   getComponentType,
   getUnhandledProps,
-  makeDebugger,
-  objectDiff,
   setRef,
   getKeyOnly,
   getKeyOrValueAndKey,
@@ -48,8 +44,10 @@ import {
   union,
   without,
 } from '../../lib/utils'
+import type { IconProps } from '../../elements/Icon'
 import type { LabelProps } from '../../elements/Label'
 import type { DropdownItemProps } from './DropdownItem'
+import type { DropdownSearchInputProps } from './DropdownSearchInput'
 import type { ForwardRefComponent } from '../../generic'
 
 export interface DropdownProps extends StrictDropdownProps {
@@ -343,13 +341,30 @@ export interface DropdownOnSearchChangeData extends DropdownProps {
   searchQuery: string
 }
 
-const debug = makeDebugger('dropdown')
+type DropdownValue = StrictDropdownProps['value']
 
-const getKeyOrValue = (key, value) => (key == null ? value : key)
-const getKeyAndValues = (options) =>
+/** Handlers subscribed via `EventStack` receive DOM events, the rest receive React events. */
+type DropdownEvent = React.SyntheticEvent<HTMLElement> | Event
+
+interface DropdownState {
+  focus: boolean
+  open?: boolean
+  searchQuery: string
+  selectedIndex?: number
+  selectedLabel?: number | string
+  upward?: boolean
+  value: DropdownValue
+
+  // stored only for a comparison in getAutoControlledStateFromProps()
+  __options?: DropdownItemProps[]
+  __value?: DropdownValue
+}
+
+const getKeyOrValue = <K, V>(key: K, value: V) => (key == null ? value : key)
+const getKeyAndValues = (options: DropdownItemProps[] | undefined) =>
   options ? options.map((option) => pick(option, ['key', 'value'])) : options
 
-function renderItemContent(item) {
+function renderItemContent(item: DropdownItemProps) {
   const { flag, image, text } = item
 
   // TODO: remove this in v3
@@ -423,14 +438,14 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>((props, ref) =>
   SearchInput: typeof DropdownSearchInput
 }
 
-class DropdownInner extends Component<DropdownProps, any> {
+class DropdownInner extends Component<DropdownProps, DropdownState> {
   declare isMouseDown: boolean
 
   searchRef = createRef<HTMLInputElement>()
   sizerRef = createRef<HTMLSpanElement>()
   ref = createRef<HTMLDivElement>()
 
-  handleRef = (el) => {
+  handleRef = (el: HTMLDivElement | null) => {
     this.ref.current = el
     setRef(this.props.innerRef, el)
   }
@@ -439,9 +454,16 @@ class DropdownInner extends Component<DropdownProps, any> {
     return { focus: false, searchQuery: '' }
   }
 
-  static getAutoControlledStateFromProps(nextProps, computedState, prevState) {
+  static getAutoControlledStateFromProps(
+    nextProps: DropdownProps,
+    computedState: DropdownState,
+    prevState: DropdownState,
+  ) {
     // These values are stored only for a comparison on next getAutoControlledStateFromProps()
-    const derivedState: any = { __options: nextProps.options, __value: computedState.value }
+    const derivedState: Partial<DropdownState> = {
+      __options: nextProps.options,
+      __value: computedState.value,
+    }
 
     // The selected index is only dependent:
     const shouldComputeSelectedIndex =
@@ -471,7 +493,6 @@ class DropdownInner extends Component<DropdownProps, any> {
   }
 
   componentDidMount() {
-    debug('componentDidMount()')
     const { open } = this.state
 
     if (open) {
@@ -479,14 +500,11 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: DropdownProps, nextState: DropdownState) {
     return !shallowEqual(nextProps, this.props) || !shallowEqual(nextState, this.state)
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    debug('componentDidUpdate()')
-    debug('to state:', objectDiff(prevState, this.state))
-
+  componentDidUpdate(prevProps: DropdownProps, prevState: DropdownState) {
     const { closeOnBlur, minCharacters, openOnFocus, search } = this.props
 
     /* eslint-disable no-console */
@@ -511,29 +529,21 @@ class DropdownInner extends Component<DropdownProps, any> {
 
     // focused / blurred
     if (!prevState.focus && this.state.focus) {
-      debug('dropdown focused')
       if (!this.isMouseDown) {
         const openable = !search || (search && minCharacters === 1 && !this.state.open)
 
-        debug('mouse is not down, opening')
         if (openOnFocus && openable) this.open()
       }
     } else if (prevState.focus && !this.state.focus) {
-      debug('dropdown blurred')
-
       if (!this.isMouseDown && closeOnBlur) {
-        debug('mouse is not down and closeOnBlur=true, closing')
         this.close()
       }
     }
 
     // opened / closed
     if (!prevState.open && this.state.open) {
-      debug('dropdown opened')
       this.setOpenDirection()
       this.scrollSelectedItemIntoView()
-    } else if (prevState.open && !this.state.open) {
-      debug('dropdown closed')
     }
 
     if (prevState.selectedIndex !== this.state.selectedIndex) {
@@ -547,12 +557,12 @@ class DropdownInner extends Component<DropdownProps, any> {
 
   // onChange needs to receive a value
   // can't rely on props.value if we are controlled
-  handleChange = (e, value) => {
-    debug('handleChange()', value)
-    this.props?.onChange?.(e, { ...this.props, value })
+  handleChange = (e: DropdownEvent, value: DropdownValue) => {
+    // `removeItemOnBackspace()` passes a DOM event (EventStack), the public type only knows React events
+    this.props?.onChange?.(e as React.SyntheticEvent<HTMLElement>, { ...this.props, value })
   }
 
-  closeOnChange = (e) => {
+  closeOnChange = (e: React.SyntheticEvent<HTMLElement>) => {
     const { closeOnChange, multiple } = this.props
     const shouldClose = closeOnChange === undefined ? !multiple : closeOnChange
 
@@ -561,18 +571,15 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  closeOnEscape = (e) => {
+  closeOnEscape = (e: KeyboardEvent) => {
     if (!this.props.closeOnEscape) return
     if (keyboardKey.getCode(e) !== keyboardKey.Escape) return
     e.preventDefault()
 
-    debug('closeOnEscape()')
     this.close(e)
   }
 
-  moveSelectionOnKeyDown = (e) => {
-    debug('moveSelectionOnKeyDown()', keyboardKey.getKey(e))
-
+  moveSelectionOnKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     const { multiple, selectOnNavigation } = this.props
     const { open } = this.state
 
@@ -580,11 +587,11 @@ class DropdownInner extends Component<DropdownProps, any> {
       return
     }
 
-    const moves = {
+    const moves: Record<number, number> = {
       [keyboardKey.ArrowDown]: 1,
       [keyboardKey.ArrowUp]: -1,
     }
-    const move = moves[keyboardKey.getCode(e)]
+    const move = moves[keyboardKey.getCode(e) as number]
 
     if (move === undefined) {
       return
@@ -600,15 +607,13 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.setState({ selectedIndex: nextIndex })
   }
 
-  openOnSpace = (e) => {
-    debug('openOnSpace()')
-
+  openOnSpace = (e: React.KeyboardEvent<HTMLElement>) => {
     const shouldHandleEvent =
       this.state.focus && !this.state.open && keyboardKey.getCode(e) === keyboardKey.Spacebar
     const shouldPreventDefault =
-      e.target?.tagName !== 'INPUT' &&
-      e.target?.tagName !== 'TEXTAREA' &&
-      e.target?.isContentEditable !== true
+      (e.target as HTMLElement)?.tagName !== 'INPUT' &&
+      (e.target as HTMLElement)?.tagName !== 'TEXTAREA' &&
+      (e.target as HTMLElement)?.isContentEditable !== true
 
     if (shouldHandleEvent) {
       if (shouldPreventDefault) {
@@ -619,8 +624,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  openOnArrow = (e) => {
-    debug('openOnArrow()')
+  openOnArrow = (e: React.KeyboardEvent<HTMLElement>) => {
     const { focus, open } = this.state
 
     if (focus && !open) {
@@ -633,7 +637,10 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  makeSelectedItemActive = (e, selectedIndex) => {
+  makeSelectedItemActive = (
+    e: React.SyntheticEvent<HTMLElement>,
+    selectedIndex: number | undefined,
+  ) => {
     const { open, value } = this.state
     const { multiple } = this.props
 
@@ -659,7 +666,8 @@ class DropdownInner extends Component<DropdownProps, any> {
 
       // Heads up! This event handler should be called after `onChange`
       // Notify the onAddItem prop if this is a new value
-      if (item['data-additional']) {
+      // `item` is defined here: `selectedValue` is not null
+      if (item!['data-additional']) {
         this.props?.onAddItem?.(e, { ...this.props, value: selectedValue })
       }
     }
@@ -667,8 +675,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     return value
   }
 
-  selectItemOnEnter = (e) => {
-    debug('selectItemOnEnter()', keyboardKey.getKey(e))
+  selectItemOnEnter = (e: React.KeyboardEvent<HTMLElement>) => {
     const { search } = this.props
     const { open, selectedIndex } = this.state
 
@@ -733,9 +740,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  removeItemOnBackspace = (e) => {
-    debug('removeItemOnBackspace()', keyboardKey.getKey(e))
-
+  removeItemOnBackspace = (e: KeyboardEvent) => {
     const { multiple, search } = this.props
     const { searchQuery, value } = this.state
 
@@ -744,16 +749,14 @@ class DropdownInner extends Component<DropdownProps, any> {
     e.preventDefault()
 
     // remove most recent value
-    const newValue = dropRight(value)
+    // `multiple` is set (checked above), the value is an array
+    const newValue = dropRight(value) as (boolean | number | string)[]
 
     this.setState({ value: newValue })
     this.handleChange(e, newValue)
   }
 
-  closeOnDocumentClick = (e) => {
-    debug('closeOnDocumentClick()')
-    debug(e)
-
+  closeOnDocumentClick = (e: MouseEvent) => {
     if (!this.props.closeOnBlur) return
 
     // If event happened in the dropdown, ignore it
@@ -766,24 +769,18 @@ class DropdownInner extends Component<DropdownProps, any> {
   // Component Event Handlers
   // ----------------------------------------
 
-  handleMouseDown = (e) => {
-    debug('handleMouseDown()')
-
+  handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
     this.isMouseDown = true
     this.props?.onMouseDown?.(e, this.props)
     document.addEventListener('mouseup', this.handleDocumentMouseUp)
   }
 
   handleDocumentMouseUp = () => {
-    debug('handleDocumentMouseUp()')
-
     this.isMouseDown = false
     document.removeEventListener('mouseup', this.handleDocumentMouseUp)
   }
 
-  handleClick = (e) => {
-    debug('handleClick()', e)
-
+  handleClick = (e: React.MouseEvent<HTMLElement>) => {
     const { minCharacters, search } = this.props
     const { open, searchQuery } = this.state
 
@@ -796,17 +793,17 @@ class DropdownInner extends Component<DropdownProps, any> {
       this.searchRef.current?.focus?.()
       return
     }
-    if (searchQuery.length >= minCharacters || minCharacters === 1) {
+    // `minCharacters` is defaulted by the `Dropdown` wrapper
+    if (searchQuery.length >= minCharacters! || minCharacters === 1) {
       this.open(e)
       return
     }
     this.searchRef.current?.focus?.()
   }
 
-  handleIconClick = (e) => {
+  handleIconClick = (e: React.MouseEvent<HTMLElement>) => {
     const { clearable } = this.props
     const hasValue = this.hasValue()
-    debug('handleIconClick()', { e, clearable, hasValue })
 
     this.props?.onClick?.(e, this.props)
     // prevent handleClick()
@@ -819,9 +816,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  handleItemClick = (e, item) => {
-    debug('handleItemClick()', item)
-
+  handleItemClick = (e: React.MouseEvent<HTMLElement>, item: DropdownItemProps) => {
     const { multiple, search } = this.props
     const { value: currentValue } = this.state
     const { value } = item
@@ -866,8 +861,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  handleFocus = (e) => {
-    debug('handleFocus()')
+  handleFocus = (e: React.FocusEvent<HTMLElement>) => {
     const { focus } = this.state
 
     if (focus) return
@@ -876,9 +870,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.setState({ focus: true })
   }
 
-  handleBlur = (e) => {
-    debug('handleBlur()')
-
+  handleBlur = (e: React.FocusEvent<HTMLElement>) => {
     // Heads up! Don't remove this.
     // https://github.com/Semantic-Org/Semantic-UI-React/issues/1315
     const currentTarget = e?.currentTarget
@@ -899,10 +891,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.clearSearchQuery()
   }
 
-  handleSearchChange = (e, { value }) => {
-    debug('handleSearchChange()')
-    debug(value)
-
+  handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>, { value }: { value: string }) => {
     // prevent propagating to this.props.onChange()
     e.stopPropagation()
 
@@ -914,15 +903,16 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.setState({ searchQuery: newQuery, selectedIndex: 0 })
 
     // open search dropdown on search query
-    if (!open && newQuery.length >= minCharacters) {
+    // `minCharacters` is defaulted by the `Dropdown` wrapper
+    if (!open && newQuery.length >= minCharacters!) {
       this.open()
       return
     }
     // close search dropdown if search query is too small
-    if (open && minCharacters !== 1 && newQuery.length < minCharacters) this.close()
+    if (open && minCharacters !== 1 && newQuery.length < minCharacters!) this.close()
   }
 
-  handleKeyDown = (e) => {
+  handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     this.moveSelectionOnKeyDown(e)
     this.openOnArrow(e)
     this.openOnSpace(e)
@@ -935,7 +925,7 @@ class DropdownInner extends Component<DropdownProps, any> {
   // Getters
   // ----------------------------------------
 
-  getSelectedItem = (selectedIndex) => {
+  getSelectedItem = (selectedIndex: number | undefined): DropdownItemProps | undefined => {
     const options = getMenuOptions({
       value: this.state.value,
       options: this.props.options,
@@ -952,7 +942,7 @@ class DropdownInner extends Component<DropdownProps, any> {
     return get(options, `[${selectedIndex}]`)
   }
 
-  getItemByValue = (value) => {
+  getItemByValue = (value: DropdownValue): DropdownItemProps | undefined => {
     const { options } = this.props
 
     return find(options, { value })
@@ -989,16 +979,13 @@ class DropdownInner extends Component<DropdownProps, any> {
   // ----------------------------------------
 
   clearSearchQuery = () => {
-    debug('clearSearchQuery()')
-
     const { searchQuery } = this.state
     if (searchQuery === undefined || searchQuery === '') return
 
     this.setState({ searchQuery: '' })
   }
 
-  handleLabelClick = (e, labelProps) => {
-    debug('handleLabelClick()')
+  handleLabelClick = (e: React.MouseEvent<HTMLElement>, labelProps: LabelProps) => {
     // prevent focusing search input on click
     e.stopPropagation()
 
@@ -1006,25 +993,21 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.props?.onLabelClick?.(e, labelProps)
   }
 
-  handleLabelRemove = (e, labelProps) => {
-    debug('handleLabelRemove()')
+  handleLabelRemove = (e: React.MouseEvent<HTMLElement>, labelProps: LabelProps) => {
     // prevent focusing search input on click
     e.stopPropagation()
     const { value } = this.state
-    const newValue = without(value, labelProps.value)
-    debug('label props:', labelProps)
-    debug('current value:', value)
-    debug('remove value:', labelProps.value)
-    debug('new value:', newValue)
+    // labels are only rendered for `multiple`, the value is an array
+    const newValue = without(value, labelProps.value) as (boolean | number | string)[]
 
     this.setState({ value: newValue })
     this.handleChange(e, newValue)
   }
 
-  getSelectedIndexAfterMove = (offset, startIndex = this.state.selectedIndex) => {
-    debug('moveSelectionBy()')
-    debug(`offset: ${offset}`)
-
+  getSelectedIndexAfterMove = (
+    offset: number,
+    startIndex: number | undefined = this.state.selectedIndex,
+  ): number | undefined => {
     const options = getMenuOptions({
       value: this.state.value,
       options: this.props.options,
@@ -1046,11 +1029,12 @@ class DropdownInner extends Component<DropdownProps, any> {
     const { wrapSelection } = this.props
     // next is after last, wrap to beginning
     // next is before first, wrap to end
-    let nextIndex = startIndex + offset
+    // `selectedIndex` is set whenever there are enabled options (checked above)
+    let nextIndex = startIndex! + offset
 
     // if 'wrapSelection' is set to false and selection is after last or before first, it just does not change
     if (!wrapSelection && (nextIndex > lastIndex || nextIndex < 0)) {
-      nextIndex = startIndex
+      nextIndex = startIndex!
     } else if (nextIndex > lastIndex) {
       nextIndex = 0
     } else if (nextIndex < 0) {
@@ -1068,13 +1052,13 @@ class DropdownInner extends Component<DropdownProps, any> {
   // Overrides
   // ----------------------------------------
 
-  handleIconOverrides = (predefinedProps) => {
+  handleIconOverrides = (predefinedProps: IconProps) => {
     const { clearable } = this.props
     const classes = cx(clearable && this.hasValue() && 'clear', predefinedProps.className)
 
     return {
       className: classes,
-      onClick: (e) => {
+      onClick: (e: React.MouseEvent<HTMLElement>) => {
         predefinedProps?.onClick?.(e, predefinedProps)
         this.handleIconClick(e)
       },
@@ -1085,7 +1069,7 @@ class DropdownInner extends Component<DropdownProps, any> {
   // Helpers
   // ----------------------------------------
 
-  clearValue = (e) => {
+  clearValue = (e: React.MouseEvent<HTMLElement>) => {
     const { multiple } = this.props
     const newValue = multiple ? [] : ''
 
@@ -1124,8 +1108,11 @@ class DropdownInner extends Component<DropdownProps, any> {
     return tabIndex == null ? 0 : tabIndex
   }
 
-  handleSearchInputOverrides = (predefinedProps) => ({
-    onChange: (e, inputProps) => {
+  handleSearchInputOverrides = (predefinedProps: DropdownSearchInputProps) => ({
+    onChange: (
+      e: React.ChangeEvent<HTMLInputElement>,
+      inputProps: DropdownSearchInputProps & { value: string },
+    ) => {
       predefinedProps?.onChange?.(e, inputProps)
       this.handleSearchChange(e, inputProps)
     },
@@ -1144,14 +1131,11 @@ class DropdownInner extends Component<DropdownProps, any> {
   // ----------------------------------------
 
   scrollSelectedItemIntoView = () => {
-    debug('scrollSelectedItemIntoView()')
     if (!this.ref.current) return
     const menu = this.ref.current.querySelector('.menu.visible')
     if (!menu) return
     const item = menu.querySelector<HTMLElement>('.item.selected')
     if (!item) return
-    debug(`menu: ${menu}`)
-    debug(`item: ${item}`)
     const isOutOfUpperView = item.offsetTop < menu.scrollTop
     const isOutOfLowerView = item.offsetTop + item.clientHeight > menu.scrollTop + menu.clientHeight
 
@@ -1183,14 +1167,14 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
   }
 
-  open = (e = null, triggerSetState = true) => {
+  open = (e: React.SyntheticEvent<HTMLElement> | null = null, triggerSetState = true) => {
     const { disabled, search } = this.props
-    debug('open()', { disabled, search, open: this.state.open })
 
     if (disabled) return
     if (search) this.searchRef.current?.focus?.()
 
-    this.props?.onOpen?.(e, this.props)
+    // `componentDidMount()` passes `null`, the public type does not allow it
+    this.props?.onOpen?.(e as React.SyntheticEvent<HTMLElement>, this.props)
 
     if (triggerSetState) {
       this.setState({ open: true })
@@ -1198,18 +1182,16 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.scrollSelectedItemIntoView()
   }
 
-  close = (e?, callback = this.handleClose) => {
-    debug('close()', { open: this.state.open })
-
+  close = (e?: DropdownEvent, callback = this.handleClose) => {
     if (this.state.open) {
-      this.props?.onClose?.(e, this.props)
+      // `closeOnEscape()` passes a DOM event (EventStack) and some callers pass nothing,
+      // the public type only knows React events
+      this.props?.onClose?.(e as React.SyntheticEvent<HTMLElement>, this.props)
       this.setState({ open: false }, callback)
     }
   }
 
   handleClose = () => {
-    debug('handleClose()')
-
     const hasSearchFocus = document.activeElement === this.searchRef.current
     // https://github.com/Semantic-Org/Semantic-UI-React/issues/627
     // Blur the Dropdown on close so it is blurred after selecting an item.
@@ -1226,7 +1208,8 @@ class DropdownInner extends Component<DropdownProps, any> {
     this.setState({ focus: hasFocus })
   }
 
-  toggle = (e) => (this.state.open ? this.close(e) : this.open(e))
+  toggle = (e: React.SyntheticEvent<HTMLElement>) =>
+    this.state.open ? this.close(e) : this.open(e)
 
   // ----------------------------------------
   // Render
@@ -1284,18 +1267,16 @@ class DropdownInner extends Component<DropdownProps, any> {
   }
 
   renderLabels = () => {
-    debug('renderLabels()')
     const { multiple, renderLabel } = this.props
     const { selectedLabel, value } = this.state
     if (!multiple || isEmpty(value)) {
       return
     }
     const selectedItems = map(value, this.getItemByValue)
-    debug('selectedItems', selectedItems)
 
     // if no item could be found for a given state value the selected item will be undefined
     // compact the selectedItems so we only have actual objects left
-    return map(compact(selectedItems), (item, index) => {
+    return map(compact(selectedItems), (item: DropdownItemProps, index: number) => {
       const defaultProps = {
         active: item.value === selectedLabel,
         as: 'a',
@@ -1305,7 +1286,8 @@ class DropdownInner extends Component<DropdownProps, any> {
         value: item.value,
       }
 
-      return Label.create(renderLabel(item, index, defaultProps), { defaultProps })
+      // `renderLabel` is defaulted by the `Dropdown` wrapper
+      return Label.create(renderLabel!(item, index, defaultProps), { defaultProps })
     })
   }
 
@@ -1334,10 +1316,10 @@ class DropdownInner extends Component<DropdownProps, any> {
     }
 
     const isActive = multiple
-      ? (optValue) => includes(value, optValue)
-      : (optValue) => optValue === value
+      ? (optValue: DropdownItemProps['value']) => includes(value, optValue)
+      : (optValue: DropdownItemProps['value']) => optValue === value
 
-    return map(options, (opt, i) =>
+    return map(options, (opt: DropdownItemProps, i: number) =>
       DropdownItem.create(
         {
           active: isActive(opt.value),
@@ -1349,8 +1331,8 @@ class DropdownInner extends Component<DropdownProps, any> {
         },
         {
           generateKey: false,
-          overrideProps: (predefinedProps) => ({
-            onClick: (e, item) => {
+          overrideProps: (predefinedProps: DropdownItemProps) => ({
+            onClick: (e: React.MouseEvent<HTMLDivElement>, item: DropdownItemProps) => {
               predefinedProps.onClick?.(e, item)
               this.handleItemClick(e, item)
             },
@@ -1382,10 +1364,6 @@ class DropdownInner extends Component<DropdownProps, any> {
   }
 
   render() {
-    debug('render()')
-    debug('props', this.props)
-    debug('state', this.state)
-
     const {
       basic,
       button,
@@ -1478,330 +1456,77 @@ class DropdownInner extends Component<DropdownProps, any> {
   }
 }
 
-Dropdown.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Label prefixed to an option added by a user. */
-  additionLabel: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-
-  /** Position of the `Add: ...` option in the dropdown list ('top' or 'bottom'). */
-  additionPosition: PropTypes.oneOf(['top', 'bottom']),
-
-  /**
-   * Allow user additions to the list of options (boolean).
-   * Requires the use of `selection`, `options` and `search`.
-   */
-  allowAdditions: customPropTypes.every([
-    customPropTypes.demand(['options', 'selection', 'search']),
-    PropTypes.bool,
-  ]),
-
-  /** A Dropdown can reduce its complexity. */
-  basic: PropTypes.bool,
-
-  /** Format the Dropdown to appear as a button. */
-  button: PropTypes.bool,
-
-  /** Primary content. */
-  children: customPropTypes.every([
-    customPropTypes.disallow(['options', 'selection']),
-    customPropTypes.givenProps(
-      { children: PropTypes.any.isRequired },
-      PropTypes.element.isRequired,
-    ),
-  ]),
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Using the clearable setting will let users remove their selection from a dropdown. */
-  clearable: PropTypes.bool,
-
-  /** Whether or not the menu should close when the dropdown is blurred. */
-  closeOnBlur: PropTypes.bool,
-
-  /** Whether or not the dropdown should close when the escape key is pressed. */
-  closeOnEscape: PropTypes.bool,
-
-  /**
-   * Whether or not the menu should close when a value is selected from the dropdown.
-   * By default, multiple selection dropdowns will remain open on change, while single
-   * selection dropdowns will close on change.
-   */
-  closeOnChange: PropTypes.bool,
-
-  /** A compact dropdown has no minimum width. */
-  compact: PropTypes.bool,
-
-  /** Whether or not the dropdown should strip diacritics in options and input search */
-  deburr: PropTypes.bool,
-
-  /** Initial value of open. */
-  defaultOpen: PropTypes.bool,
-
-  /** Initial value of searchQuery. */
-  defaultSearchQuery: PropTypes.string,
-
-  /** Currently selected label in multi-select. */
-  defaultSelectedLabel: customPropTypes.every([
-    customPropTypes.demand(['multiple']),
-    PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  ]),
-
-  /** Initial value of upward. */
-  defaultUpward: PropTypes.bool,
-
-  /** Initial value or value array if multiple. */
-  defaultValue: PropTypes.oneOfType([
-    PropTypes.number,
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool])),
-  ]),
-
-  /** A dropdown menu can open to the left or to the right. */
-  direction: PropTypes.oneOf(['left', 'right']),
-
-  /** A disabled dropdown menu or item does not allow user interaction. */
-  disabled: PropTypes.bool,
-
-  /** An errored dropdown can alert a user to a problem. */
-  error: PropTypes.bool,
-
-  /** A dropdown menu can contain floated content. */
-  floating: PropTypes.bool,
-
-  /** A dropdown can take the full width of its parent */
-  fluid: PropTypes.bool,
-
-  /** A dropdown menu can contain a header. */
-  header: PropTypes.node,
-
-  /** Shorthand for Icon. */
-  icon: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
-
-  /** A dropdown can be formatted to appear inline in other content. */
-  inline: PropTypes.bool,
-
-  /** A dropdown can be formatted as a Menu item. */
-  item: PropTypes.bool,
-
-  /** A dropdown can be labeled. */
-  labeled: PropTypes.bool,
-
-  /** A dropdown can defer rendering its options until it is open. */
-  lazyLoad: PropTypes.bool,
-
-  /** A dropdown can show that it is currently loading data. */
-  loading: PropTypes.bool,
-
-  /** The minimum characters for a search to begin showing results. */
-  minCharacters: PropTypes.number,
-
-  /** A selection dropdown can allow multiple selections. */
-  multiple: PropTypes.bool,
-
-  /** Message to display when there are no results. */
-  noResultsMessage: PropTypes.node,
-
-  /**
-   * Called when a user adds a new item. Use this to update the options list.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and the new item's value.
-   */
-  onAddItem: PropTypes.func,
-
-  /**
-   * Called on blur.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onBlur: PropTypes.func,
-
-  /**
-   * Called when the user attempts to change the value.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and proposed value.
-   */
-  onChange: PropTypes.func,
-
-  /**
-   * Called on click.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClick: PropTypes.func,
-
-  /**
-   * Called when a close event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClose: PropTypes.func,
-
-  /**
-   * Called on focus.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onFocus: PropTypes.func,
-
-  /**
-   * Called when a multi-select label is clicked.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All label props.
-   */
-  onLabelClick: PropTypes.func,
-
-  /**
-   * Called on mousedown.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onMouseDown: PropTypes.func,
-
-  /**
-   * Called when an open event happens.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onOpen: PropTypes.func,
-
-  /**
-   * Called on search input change.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props, includes current value of searchQuery.
-   */
-  onSearchChange: PropTypes.func,
-
-  /** Controls whether or not the dropdown menu is displayed. */
-  open: PropTypes.bool,
-
-  /** Whether or not the menu should open when the dropdown is focused. */
-  openOnFocus: PropTypes.bool,
-
-  /** Array of Dropdown.Item props e.g. `{ text: '', value: '' }` */
-  options: customPropTypes.every([
-    customPropTypes.disallow(['children']),
-    PropTypes.arrayOf(PropTypes.shape(DropdownItem.propTypes)),
-  ]),
-
-  /** Placeholder text. */
-  placeholder: PropTypes.string,
-
-  /** A dropdown can be formatted so that its menu is pointing. */
-  pointing: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.oneOf([
-      'left',
-      'right',
-      'top',
-      'top left',
-      'top right',
-      'bottom',
-      'bottom left',
-      'bottom right',
-    ]),
-  ]),
-
-  /**
-   * Mapped over the active items and returns shorthand for the active item Labels.
-   * Only applies to `multiple` Dropdowns.
-   *
-   * @param {object} item - A currently active dropdown item.
-   * @param {number} index - The current index.
-   * @param {object} defaultLabelProps - The default props for an active item Label.
-   * @returns {*} Shorthand for a Label.
-   */
-  renderLabel: PropTypes.func,
-
-  /** A dropdown can have its menu scroll. */
-  scrolling: PropTypes.bool,
-
-  /**
-   * A selection dropdown can allow a user to search through a large list of choices.
-   * Pass a function here to replace the default search.
-   */
-  search: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
-
-  /** A shorthand for a search input. */
-  searchInput: PropTypes.oneOfType([PropTypes.array, PropTypes.node, PropTypes.object]),
-
-  /** Current value of searchQuery. Creates a controlled component. */
-  searchQuery: PropTypes.string,
-
-  // TODO 'searchInMenu' or 'search='in menu' or ???  How to handle this markup and functionality?
-
-  /** Define whether the highlighted item should be selected on blur. */
-  selectOnBlur: PropTypes.bool,
-
-  /**
-   * Whether or not to change the value when navigating the menu using arrow keys.
-   * Setting to false will require enter or left click to confirm a choice.
-   */
-  selectOnNavigation: PropTypes.bool,
-
-  /** Currently selected label in multi-select. */
-  selectedLabel: customPropTypes.every([
-    customPropTypes.demand(['multiple']),
-    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  ]),
-
-  /** A dropdown can be used to select between choices in a form. */
-  selection: customPropTypes.every([
-    customPropTypes.disallow(['children']),
-    customPropTypes.demand(['options']),
-    PropTypes.bool,
-  ]),
-
-  /** A simple dropdown can open without Javascript. */
-  simple: PropTypes.bool,
-
-  /** A dropdown can receive focus. */
-  tabIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** The text displayed in the dropdown, usually for the active item. */
-  text: PropTypes.string,
-
-  /** Custom element to trigger the menu to become visible. Takes place of 'text'. */
-  trigger: customPropTypes.every([customPropTypes.disallow(['selection', 'text']), PropTypes.node]),
-
-  /** Current value or value array if multiple. Creates a controlled component. */
-  value: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number])),
-  ]),
-
-  /** Controls whether the dropdown will open upward. */
-  upward: PropTypes.bool,
-
-  /**
-   * A dropdown will go to the last element when ArrowUp is pressed on the first,
-   * or go to the first when ArrowDown is pressed on the last( aka infinite selection )
-   */
-  wrapSelection: PropTypes.bool,
-}
+Dropdown.handledProps = [
+  'additionLabel',
+  'additionPosition',
+  'allowAdditions',
+  'as',
+  'basic',
+  'button',
+  'children',
+  'className',
+  'clearable',
+  'closeOnBlur',
+  'closeOnChange',
+  'closeOnEscape',
+  'compact',
+  'deburr',
+  'defaultOpen',
+  'defaultSearchQuery',
+  'defaultSelectedLabel',
+  'defaultUpward',
+  'defaultValue',
+  'direction',
+  'disabled',
+  'error',
+  'floating',
+  'fluid',
+  'header',
+  'icon',
+  'inline',
+  'item',
+  'labeled',
+  'lazyLoad',
+  'loading',
+  'minCharacters',
+  'multiple',
+  'noResultsMessage',
+  'onAddItem',
+  'onBlur',
+  'onChange',
+  'onClick',
+  'onClose',
+  'onFocus',
+  'onLabelClick',
+  'onMouseDown',
+  'onOpen',
+  'onSearchChange',
+  'open',
+  'openOnFocus',
+  'options',
+  'placeholder',
+  'pointing',
+  'renderLabel',
+  'scrolling',
+  'search',
+  'searchInput',
+  'searchQuery',
+  'selectOnBlur',
+  'selectOnNavigation',
+  'selectedLabel',
+  'selection',
+  'simple',
+  'tabIndex',
+  'text',
+  'trigger',
+  'upward',
+  'value',
+  'wrapSelection',
+]
 
 Dropdown.displayName = 'Dropdown'
 
 DropdownInner.autoControlledProps = ['open', 'searchQuery', 'selectedLabel', 'value', 'upward']
-
-if (process.env.NODE_ENV !== 'production') {
-  DropdownInner.propTypes = Dropdown.propTypes
-}
 
 Dropdown.Divider = DropdownDivider
 Dropdown.Header = DropdownHeader

@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import React, { isValidElement } from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -97,7 +95,7 @@ const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(function (props
   )
   const rest = getUnhandledProps(ListItem, props)
 
-  const handleClick = useEventCallback((e) => {
+  const handleClick = useEventCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!disabled) {
       props?.onClick?.(e, props)
     }
@@ -184,57 +182,20 @@ const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(function (props
 }) as ForwardRefComponent<ListItemProps, HTMLDivElement>
 
 ListItem.displayName = 'ListItem'
-ListItem.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A list item can active. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /**
-   * Shorthand for primary content.
-   *
-   * Heads up!
-   *
-   * This is handled slightly differently than the typical `content` prop since
-   * the wrapping ListContent is not used when there's no icon or image.
-   *
-   * If you pass content as:
-   * - an element/literal, it's treated as the sibling node to
-   * header/description (whether wrapped in Item.Content or not).
-   * - a props object, it forces the presence of Item.Content and passes those
-   * props to it. If you pass a content prop within that props object, it
-   * will be treated as the sibling node to header/description.
-   */
-  content: customPropTypes.itemShorthand,
-
-  /** Shorthand for ListDescription. */
-  description: customPropTypes.itemShorthand,
-
-  /** A list item can disabled. */
-  disabled: PropTypes.bool,
-
-  /** Shorthand for ListHeader. */
-  header: customPropTypes.itemShorthand,
-
-  /** Shorthand for ListIcon. */
-  icon: customPropTypes.every([customPropTypes.disallow(['image']), customPropTypes.itemShorthand]),
-
-  /** Shorthand for Image. */
-  image: customPropTypes.every([customPropTypes.disallow(['icon']), customPropTypes.itemShorthand]),
-
-  /** A ListItem can be clicked */
-  onClick: PropTypes.func,
-
-  /** A value for an ordered list. */
-  value: PropTypes.string,
-}
+ListItem.handledProps = [
+  'active',
+  'as',
+  'children',
+  'className',
+  'content',
+  'description',
+  'disabled',
+  'header',
+  'icon',
+  'image',
+  'onClick',
+  'value',
+]
 ListItem.create = createShorthandFactory(ListItem, (content) => ({ content }))
 
 export default ListItem

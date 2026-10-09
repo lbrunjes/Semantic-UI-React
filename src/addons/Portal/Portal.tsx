@@ -1,12 +1,9 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
-  customPropTypes,
   doesNodeContainClick,
   EventStack,
   keyboardKey,
-  makeDebugger,
   useAutoControlledValue,
   useEventCallback,
 } from '../../lib'
@@ -112,8 +109,6 @@ export interface StrictPortalProps {
   triggerRef?: React.Ref<any>
 }
 
-const debug = makeDebugger('portal')
-
 /**
  * A component that allows you to render children outside their parent.
  * @see Modal
@@ -146,26 +141,28 @@ const Portal = function Portal(props: PortalProps) {
     initialState: false,
   })
 
-  const contentRef = React.useRef(undefined)
+  const contentRef = React.useRef<HTMLElement | null | undefined>(undefined)
   const [triggerRef, trigger] = useTrigger(props.trigger, props.triggerRef)
 
-  const mouseEnterTimer = React.useRef(undefined)
-  const mouseLeaveTimer = React.useRef(undefined)
-  const latestDocumentMouseDownEvent = React.useRef(undefined)
+  const mouseEnterTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const mouseLeaveTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const latestDocumentMouseDownEvent = React.useRef<MouseEvent | null | undefined>(undefined)
 
   // ----------------------------------------
   // Behavior
   // ----------------------------------------
 
-  const openPortal = (e) => {
-    debug('open()')
-
+  // Portal events are React events from the trigger, DOM events from the document/window or
+  // clones of them (see below), they are passed as is to `onOpen()` & `onClose()`
+  const openPortal = (e: any) => {
     setOpen(true)
     props?.onOpen?.(e, { ...props, open: true })
   }
 
-  const openPortalWithTimeout = (e, delay) => {
-    debug('openWithTimeout()', delay)
+  const openPortalWithTimeout = (
+    e: React.SyntheticEvent<HTMLElement>,
+    delay: number | undefined,
+  ) => {
     // React wipes the entire event object and suggests using e.persist() if
     // you need the event for async access. However, even with e.persist
     // certain required props (e.g. currentTarget) are null so we're forced to clone.
@@ -173,15 +170,15 @@ const Portal = function Portal(props: PortalProps) {
     return setTimeout(() => openPortal(eventClone), delay || 0)
   }
 
-  const closePortal = useEventCallback((e) => {
-    debug('close()')
-
+  const closePortal = useEventCallback((e: any) => {
     setOpen(false)
     props?.onClose?.(e, { ...props, open: false })
   })
 
-  const closePortalWithTimeout = (e, delay) => {
-    debug('closeWithTimeout()', delay)
+  const closePortalWithTimeout = (
+    e: MouseEvent | React.SyntheticEvent<HTMLElement>,
+    delay: number | undefined,
+  ) => {
     // React wipes the entire event object and suggests using e.persist() if
     // you need the event for async access. However, even with e.persist
     // certain required props (e.g. currentTarget) are null so we're forced to clone.
@@ -199,11 +196,11 @@ const Portal = function Portal(props: PortalProps) {
     clearTimeout(mouseLeaveTimer.current)
   }, [])
 
-  const handleDocumentMouseDown = (e) => {
+  const handleDocumentMouseDown = (e: MouseEvent) => {
     latestDocumentMouseDownEvent.current = e
   }
 
-  const handleDocumentClick = (e) => {
+  const handleDocumentClick = (e: MouseEvent) => {
     const currentMouseDownEvent = latestDocumentMouseDownEvent.current
     latestDocumentMouseDownEvent.current = null
 
@@ -225,12 +222,11 @@ const Portal = function Portal(props: PortalProps) {
     } // ignore the click
 
     if (closeOnDocumentClick) {
-      debug('handleDocumentClick()')
       closePortal(e)
     }
   }
 
-  const handleEscape = (e) => {
+  const handleEscape = (e: KeyboardEvent) => {
     if (!closeOnEscape) {
       return
     }
@@ -238,7 +234,6 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handleEscape()')
     closePortal(e)
   }
 
@@ -251,12 +246,13 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    const handleScroll = (e) => {
-      debug('handleHideOnScroll()')
-
+    const handleScroll = (e: Event) => {
       // Do not hide the popup when scroll comes from inside the popup
       // https://github.com/Semantic-Org/Semantic-UI-React/issues/4305
-      if (isElement(e.target) && contentRef.current.contains(e.target)) {
+      // TODO(bug): the listener is also registered while the portal is closed, `contentRef.current`
+      // is unset then and this throws if the event target is an element (window scroll events
+      // target the document, so only for synthetic/captured events)
+      if (isElement(e.target) && contentRef.current!.contains(e.target as Node)) {
         return
       }
 
@@ -270,7 +266,7 @@ const Portal = function Portal(props: PortalProps) {
     }
   }, [closePortal, hideOnScroll])
 
-  const handlePortalMouseLeave = (e) => {
+  const handlePortalMouseLeave = (e: MouseEvent) => {
     if (!closeOnPortalMouseLeave) {
       return
     }
@@ -280,7 +276,6 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handlePortalMouseLeave()')
     mouseLeaveTimer.current = closePortalWithTimeout(e, mouseLeaveDelay)
   }
 
@@ -291,11 +286,10 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handlePortalMouseEnter()')
     clearTimeout(mouseLeaveTimer.current)
   }
 
-  const handleTriggerBlur = (e, ...rest) => {
+  const handleTriggerBlur = (e: React.FocusEvent<HTMLElement>, ...rest: unknown[]) => {
     // Call original event handler
     trigger?.props?.onBlur?.(e, ...rest)
 
@@ -308,25 +302,21 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handleTriggerBlur()')
     closePortal(e)
   }
 
-  const handleTriggerClick = (e, ...rest) => {
+  const handleTriggerClick = (e: React.MouseEvent<HTMLElement>, ...rest: unknown[]) => {
     // Call original event handler
     trigger?.props?.onClick?.(e, ...rest)
 
     if (open && closeOnTriggerClick) {
-      debug('handleTriggerClick() - close')
-
       closePortal(e)
     } else if (!open && openOnTriggerClick) {
-      debug('handleTriggerClick() - open')
       openPortal(e)
     }
   }
 
-  const handleTriggerFocus = (e, ...rest) => {
+  const handleTriggerFocus = (e: React.FocusEvent<HTMLElement>, ...rest: unknown[]) => {
     // Call original event handler
     trigger?.props?.onFocus?.(e, ...rest)
 
@@ -334,11 +324,10 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handleTriggerFocus()')
     openPortal(e)
   }
 
-  const handleTriggerMouseLeave = (e, ...rest) => {
+  const handleTriggerMouseLeave = (e: React.MouseEvent<HTMLElement>, ...rest: unknown[]) => {
     clearTimeout(mouseEnterTimer.current)
 
     // Call original event handler
@@ -348,11 +337,10 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handleTriggerMouseLeave()')
     mouseLeaveTimer.current = closePortalWithTimeout(e, mouseLeaveDelay)
   }
 
-  const handleTriggerMouseEnter = (e, ...rest) => {
+  const handleTriggerMouseEnter = (e: React.MouseEvent<HTMLElement>, ...rest: unknown[]) => {
     clearTimeout(mouseLeaveTimer.current)
 
     // Call original event handler
@@ -362,7 +350,6 @@ const Portal = function Portal(props: PortalProps) {
       return
     }
 
-    debug('handleTriggerMouseEnter()')
     mouseEnterTimer.current = openPortalWithTimeout(e, mouseEnterDelay)
   }
 
@@ -410,100 +397,31 @@ const Portal = function Portal(props: PortalProps) {
 }
 
 Portal.displayName = 'Portal'
-Portal.propTypes = {
-  /** Primary content. */
-  children: PropTypes.node.isRequired,
-
-  /** Controls whether or not the portal should close when the document is clicked. */
-  closeOnDocumentClick: PropTypes.bool,
-
-  /** Controls whether or not the portal should close when escape is pressed is displayed. */
-  closeOnEscape: PropTypes.bool,
-
-  /**
-   * Controls whether or not the portal should close when mousing out of the portal.
-   * NOTE: This will prevent `closeOnTriggerMouseLeave` when mousing over the
-   * gap from the trigger to the portal.
-   */
-  closeOnPortalMouseLeave: PropTypes.bool,
-
-  /** Controls whether or not the portal should close on blur of the trigger. */
-  closeOnTriggerBlur: PropTypes.bool,
-
-  /** Controls whether or not the portal should close on click of the trigger. */
-  closeOnTriggerClick: PropTypes.bool,
-
-  /** Controls whether or not the portal should close when mousing out of the trigger. */
-  closeOnTriggerMouseLeave: PropTypes.bool,
-
-  /** Initial value of open. */
-  defaultOpen: PropTypes.bool,
-
-  /** Event pool namespace that is used to handle component events */
-  eventPool: PropTypes.string,
-
-  /** Hide the Popup when scrolling the window. */
-  hideOnScroll: PropTypes.bool,
-
-  /** The node where the portal should mount. */
-  mountNode: PropTypes.any,
-
-  /** Milliseconds to wait before opening on mouse over */
-  mouseEnterDelay: PropTypes.number,
-
-  /** Milliseconds to wait before closing on mouse leave */
-  mouseLeaveDelay: PropTypes.number,
-
-  /**
-   * Called when a close event happens
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onClose: PropTypes.func,
-
-  /**
-   * Called when the portal is mounted on the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onMount: PropTypes.func,
-
-  /**
-   * Called when an open event happens
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props.
-   */
-  onOpen: PropTypes.func,
-
-  /**
-   * Called when the portal is unmounted from the DOM.
-   *
-   * @param {null}
-   * @param {object} data - All props.
-   */
-  onUnmount: PropTypes.func,
-
-  /** Controls whether or not the portal is displayed. */
-  open: PropTypes.bool,
-
-  /** Controls whether or not the portal should open when the trigger is clicked. */
-  openOnTriggerClick: PropTypes.bool,
-
-  /** Controls whether or not the portal should open on focus of the trigger. */
-  openOnTriggerFocus: PropTypes.bool,
-
-  /** Controls whether or not the portal should open when mousing over the trigger. */
-  openOnTriggerMouseEnter: PropTypes.bool,
-
-  /** Element to be rendered in-place where the portal is defined. */
-  trigger: PropTypes.node,
-
-  /** Called with a ref to the trigger node. */
-  triggerRef: customPropTypes.ref,
-}
+Portal.handledProps = [
+  'children',
+  'closeOnDocumentClick',
+  'closeOnEscape',
+  'closeOnPortalMouseLeave',
+  'closeOnTriggerBlur',
+  'closeOnTriggerClick',
+  'closeOnTriggerMouseLeave',
+  'defaultOpen',
+  'eventPool',
+  'hideOnScroll',
+  'mountNode',
+  'mouseEnterDelay',
+  'mouseLeaveDelay',
+  'onClose',
+  'onMount',
+  'onOpen',
+  'onUnmount',
+  'open',
+  'openOnTriggerClick',
+  'openOnTriggerFocus',
+  'openOnTriggerMouseEnter',
+  'trigger',
+  'triggerRef',
+]
 
 Portal.Inner = PortalInner
 

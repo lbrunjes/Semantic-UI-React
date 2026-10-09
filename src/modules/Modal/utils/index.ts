@@ -10,7 +10,7 @@ const PADDING = 50
  *
  * @see https://github.com/Semantic-Org/Semantic-UI/blob/2.4.1/src/definitions/modules/modal.js#L608
  */
-export const canFit = (modalRect) => {
+export const canFit = (modalRect: DOMRect) => {
   // original: scrollHeight = $module.prop('scrollHeight'),
   // is replaced by .height because scrollHeight provides integer which produces glitches
   // https://github.com/Semantic-Org/Semantic-UI-React/issues/2221
@@ -42,7 +42,11 @@ export const canFit = (modalRect) => {
  *
  * @see https://github.com/Semantic-Org/Semantic-UI/blob/2.4.1/src/definitions/modules/modal.js#L718
  */
-export const getLegacyStyles = (isFitted, centered, modalRect) => {
+export const getLegacyStyles = (
+  isFitted: boolean,
+  centered: boolean | undefined,
+  modalRect: DOMRect,
+) => {
   const marginTop = centered && isFitted ? -(modalRect.height / 2) : 0
   const marginLeft = -(modalRect.width / 2)
 

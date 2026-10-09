@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  childrenUtils,
-  customPropTypes,
-  cx,
-  getComponentType,
-  getUnhandledProps,
-  getKeyOnly,
-} from '../../lib'
+import { childrenUtils, cx, getComponentType, getUnhandledProps, getKeyOnly } from '../../lib'
 import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
 
 export interface PlaceholderHeaderProps extends StrictPlaceholderHeaderProps {
@@ -51,21 +43,6 @@ const PlaceholderHeader = React.forwardRef<HTMLDivElement, PlaceholderHeaderProp
 ) as ForwardRefComponent<PlaceholderHeaderProps, HTMLDivElement>
 
 PlaceholderHeader.displayName = 'PlaceholderHeader'
-PlaceholderHeader.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A placeholder can contain an image. */
-  image: PropTypes.bool,
-}
+PlaceholderHeader.handledProps = ['as', 'children', 'className', 'content', 'image']
 
 export default PlaceholderHeader

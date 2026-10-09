@@ -1,12 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import {
-  customPropTypes,
-  getComponentType,
-  getUnhandledProps,
-  useAutoControlledValue,
-} from '../../lib'
+import { getComponentType, getUnhandledProps, useAutoControlledValue } from '../../lib'
 import Grid from '../../collections/Grid/Grid'
 import GridColumn from '../../collections/Grid/GridColumn'
 import Menu from '../../collections/Menu/Menu'
@@ -14,6 +8,8 @@ import TabPane from './TabPane'
 import { get, map } from '../../lib/utils'
 import type { ForwardRefComponent, SemanticShorthandItem } from '../../generic'
 import type { TabPaneProps } from './TabPane'
+import type { MenuItemProps } from '../../collections/Menu/MenuItem'
+import type { MenuProps } from '../../collections/Menu/Menu'
 
 export interface TabProps extends StrictTabProps {
   [key: string]: any
@@ -90,7 +86,7 @@ const Tab = React.forwardRef<HTMLDivElement, TabProps>(function (props, ref) {
     initialState: 0,
   })
 
-  const handleItemClick = (e, { index }) => {
+  const handleItemClick = (e: React.MouseEvent<HTMLDivElement>, { index }: MenuItemProps) => {
     props?.onTabChange?.(e, { ...props, activeIndex: index })
     setActiveIndex(index)
   }
@@ -100,7 +96,7 @@ const Tab = React.forwardRef<HTMLDivElement, TabProps>(function (props, ref) {
       return get(panes, `[${activeIndex}]`)?.render?.(props)
     }
 
-    return map(panes, ({ pane }, index) =>
+    return map(panes, ({ pane }: NonNullable<TabProps['panes']>[number], index: number) =>
       TabPane.create(pane, {
         overrideProps: {
           active: index === activeIndex,
@@ -124,7 +120,7 @@ const Tab = React.forwardRef<HTMLDivElement, TabProps>(function (props, ref) {
     })
   }
 
-  const renderVertical = (menuElement) => {
+  const renderVertical = (menuElement: React.ReactElement<MenuProps>) => {
     const { paneWidth, tabWidth, ...gridProps } = grid
 
     const position = menuPosition || (menuElement.props.tabular === 'right' && 'right') || 'left'
@@ -171,54 +167,17 @@ const Tab = React.forwardRef<HTMLDivElement, TabProps>(function (props, ref) {
 }
 
 Tab.displayName = 'Tab'
-Tab.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** The initial activeIndex. */
-  defaultActiveIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /** Index of the currently active tab. */
-  activeIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
-  /**
-   * Shorthand props for the Menu.
-   * tabular, if true, will derive final value from `menuPosition`, otherwise set 'left' or 'right' explicitly.
-   */
-  menu: PropTypes.object,
-
-  /** Align vertical menu */
-  menuPosition: PropTypes.oneOf(['left', 'right']),
-
-  /** Shorthand props for the Grid. Only applicable to vertical menus. */
-  grid: PropTypes.object,
-
-  /**
-   * Called on tab change.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All props and proposed new activeIndex.
-   * @param {object} data.activeIndex - The new proposed activeIndex.
-   */
-  onTabChange: PropTypes.func,
-
-  /**
-   * Array of objects describing each Menu.Item and Tab.Pane:
-   * { menuItem: 'Home', render: () => <Tab.Pane /> }
-   * or
-   * { menuItem: 'Home', pane: 'Welcome' }
-   */
-  panes: PropTypes.arrayOf(
-    PropTypes.shape({
-      menuItem: customPropTypes.itemShorthand,
-      pane: customPropTypes.itemShorthand,
-      render: PropTypes.func,
-    }),
-  ),
-
-  /** A Tab can render only active pane. */
-  renderActiveOnly: PropTypes.bool,
-}
+Tab.handledProps = [
+  'activeIndex',
+  'as',
+  'defaultActiveIndex',
+  'grid',
+  'menu',
+  'menuPosition',
+  'onTabChange',
+  'panes',
+  'renderActiveOnly',
+]
 
 Tab.Pane = TabPane
 

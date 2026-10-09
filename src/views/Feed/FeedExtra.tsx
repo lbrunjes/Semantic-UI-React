@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createHTMLImage,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -16,6 +14,7 @@ import type {
   SemanticShorthandContent,
   SemanticShorthandCollection,
   ForwardRefComponent,
+  SemanticShorthandItem,
 } from '../../generic'
 
 export interface FeedExtraProps extends StrictFeedExtraProps {
@@ -66,10 +65,14 @@ const FeedExtra = React.forwardRef<HTMLDivElement, FeedExtraProps>(function (pro
   }
 
   // TODO need a "collection factory" to handle creating multiple image elements and their keys
-  const imageElements = map(images, (image, index) => {
-    const key = [index, image].join('-')
-    return createHTMLImage(image, { key })
-  })
+  const imageElements = map(
+    images,
+    (image: SemanticShorthandItem<HtmlImageProps>, index: number) => {
+      const key = [index, image].join('-')
+      // TODO(bug): `key` is not a supported option of createShorthand() and is ignored at runtime
+      return createHTMLImage(image, { key } as any)
+    },
+  )
 
   return (
     <ElementType {...rest} className={classes} ref={ref}>
@@ -80,27 +83,6 @@ const FeedExtra = React.forwardRef<HTMLDivElement, FeedExtraProps>(function (pro
 }) as ForwardRefComponent<FeedExtraProps, HTMLDivElement>
 
 FeedExtra.displayName = 'FeedExtra'
-FeedExtra.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** An event can contain additional information like a set of images. */
-  images: customPropTypes.every([
-    customPropTypes.disallow(['text']),
-    PropTypes.oneOfType([PropTypes.bool, customPropTypes.collectionShorthand]),
-  ]),
-
-  /** An event can contain additional text information. */
-  text: PropTypes.bool,
-}
+FeedExtra.handledProps = ['as', 'children', 'className', 'content', 'images', 'text']
 
 export default FeedExtra

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getComponentType, getUnhandledProps } from '../../lib'
@@ -32,12 +31,6 @@ const DropdownDivider = React.forwardRef<HTMLDivElement, DropdownDividerProps>(
 ) as ForwardRefComponent<DropdownDividerProps, HTMLDivElement>
 
 DropdownDivider.displayName = 'DropdownDivider'
-DropdownDivider.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-}
+DropdownDivider.handledProps = ['as', 'className']
 
 export default DropdownDivider

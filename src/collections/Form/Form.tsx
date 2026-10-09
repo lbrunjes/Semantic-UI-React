@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
-import { cx, getComponentType, getUnhandledProps, SUI, getKeyOnly, getWidthProp } from '../../lib'
+import { cx, getComponentType, getUnhandledProps, getKeyOnly, getWidthProp } from '../../lib'
 import FormButton from './FormButton'
 import FormCheckbox from './FormCheckbox'
 import FormDropdown from './FormDropdown'
@@ -11,7 +10,6 @@ import FormInput from './FormInput'
 import FormRadio from './FormRadio'
 import FormSelect from './FormSelect'
 import FormTextArea from './FormTextArea'
-import { without } from '../../lib/utils'
 import type { ForwardRefComponent } from '../../generic'
 
 export interface FormProps extends StrictFormProps {
@@ -88,7 +86,7 @@ const Form = React.forwardRef<HTMLFormElement, FormProps>(function (props, ref) 
     widths,
   } = props
 
-  const handleSubmit = (e, ...args) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>, ...args: any[]) => {
     // Heads up! Third party libs can pass own data as first argument, we need to check that it has preventDefault()
     // method.
     if (typeof action !== 'string') e?.preventDefault?.()
@@ -105,7 +103,7 @@ const Form = React.forwardRef<HTMLFormElement, FormProps>(function (props, ref) 
     getKeyOnly(success, 'success'),
     getKeyOnly(unstackable, 'unstackable'),
     getKeyOnly(warning, 'warning'),
-    getWidthProp(widths, null, true),
+    getWidthProp(widths, undefined, true),
     'form',
     className,
   )
@@ -131,49 +129,22 @@ const Form = React.forwardRef<HTMLFormElement, FormProps>(function (props, ref) 
 
 Form.displayName = 'Form'
 
-Form.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** The HTML form action */
-  action: PropTypes.string,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Automatically show any error Message children. */
-  error: PropTypes.bool,
-
-  /** A form can have its color inverted for contrast. */
-  inverted: PropTypes.bool,
-
-  /** Automatically show a loading indicator. */
-  loading: PropTypes.bool,
-
-  /** The HTML form submit handler. */
-  onSubmit: PropTypes.func,
-
-  /** A comment can contain a form to reply to a comment. This may have arbitrary content. */
-  reply: PropTypes.bool,
-
-  /** A form can vary in size. */
-  size: PropTypes.oneOf(without(SUI.SIZES, 'medium')),
-
-  /** Automatically show any success Message children. */
-  success: PropTypes.bool,
-
-  /** A form can prevent itself from stacking on mobile. */
-  unstackable: PropTypes.bool,
-
-  /** Automatically show any warning Message children. */
-  warning: PropTypes.bool,
-
-  /** Forms can automatically divide fields to be equal width. */
-  widths: PropTypes.oneOf(['equal']),
-}
+Form.handledProps = [
+  'action',
+  'as',
+  'children',
+  'className',
+  'error',
+  'inverted',
+  'loading',
+  'onSubmit',
+  'reply',
+  'size',
+  'success',
+  'unstackable',
+  'warning',
+  'widths',
+]
 
 Form.Field = FormField
 Form.Button = FormButton

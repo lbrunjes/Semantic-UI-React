@@ -7,43 +7,56 @@
 const objectToString = Object.prototype.toString
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
-const hasOwn = (object, key) => object != null && hasOwnProperty.call(object, key)
-const identity = (value) => value
-const toStringValue = (value) => (value == null ? '' : String(value))
+// Collections accept arrays, array-likes, strings, objects, "null" & "undefined" like in lodash.
+// Their items are of any type, so values & results are typed as "any" to stay usable by callers.
+type Collection = any
+
+type IterateeFunction = (value: any, key?: any, collection?: any) => unknown
+
+// A function or a lodash shorthand: a property path, a partial object or a [path, value] pair
+type Iteratee = IterateeFunction | PropertyKey | readonly unknown[] | object | null | undefined
+
+type Path = PropertyKey | readonly PropertyKey[] | null | undefined
+
+const hasOwn = (object: unknown, key: PropertyKey): boolean =>
+  object != null && hasOwnProperty.call(object, key)
+const identity = (value: any): any => value
+const toStringValue = (value: unknown): string => (value == null ? '' : String(value))
 
 // ----------------------------------------
 // Types
 // ----------------------------------------
 
-export const isNil = (value) => value == null
+export const isNil = (value: unknown): value is null | undefined => value == null
 
-export const isObject = (value) =>
+export const isObject = (value: unknown): value is object =>
   value !== null && (typeof value === 'object' || typeof value === 'function')
 
-const isObjectLike = (value) => value !== null && typeof value === 'object'
+const isObjectLike = (value: unknown): boolean => value !== null && typeof value === 'object'
 
-const isLength = (value) =>
+const isLength = (value: unknown): boolean =>
   typeof value === 'number' && value > -1 && value % 1 === 0 && value <= Number.MAX_SAFE_INTEGER
 
-const isArrayLike = (value) =>
+const isArrayLike = (value: any): value is ArrayLike<any> =>
   value != null && typeof value !== 'function' && isLength(value.length)
 
-const isArrayLikeObject = (value) => isObjectLike(value) && isArrayLike(value)
+const isArrayLikeObject = (value: unknown): value is ArrayLike<any> & object =>
+  isObjectLike(value) && isArrayLike(value)
 
-export const isString = (value) =>
+export const isString = (value: unknown): boolean =>
   typeof value === 'string' ||
   (isObjectLike(value) && objectToString.call(value) === '[object String]')
 
-export const isNumber = (value) =>
+export const isNumber = (value: unknown): boolean =>
   typeof value === 'number' ||
   (isObjectLike(value) && objectToString.call(value) === '[object Number]')
 
-export const isBoolean = (value) =>
+export const isBoolean = (value: unknown): boolean =>
   value === true ||
   value === false ||
   (isObjectLike(value) && objectToString.call(value) === '[object Boolean]')
 
-export const isPlainObject = (value) => {
+export const isPlainObject = (value: unknown): boolean => {
   if (!isObjectLike(value) || objectToString.call(value) !== '[object Object]') return false
 
   const proto = Object.getPrototypeOf(value)
@@ -58,10 +71,10 @@ export const isPlainObject = (value) => {
   )
 }
 
-export const isElement = (value) =>
+export const isElement = (value: any): boolean =>
   isObjectLike(value) && value.nodeType === 1 && !isPlainObject(value)
 
-export const isEmpty = (value) => {
+export const isEmpty = (value: any): boolean => {
   if (value == null) return true
   if (isArrayLike(value)) return !value.length
 
@@ -79,7 +92,7 @@ export const isEmpty = (value) => {
 // Equality
 // ----------------------------------------
 
-const baseIsEqual = (value, other, stack) => {
+const baseIsEqual = (value: any, other: any, stack: Map<any, any>): boolean => {
   // SameValueZero
   if (value === other || (value !== value && other !== other)) return true
   if (!isObjectLike(value) || !isObjectLike(other)) return false
@@ -119,7 +132,9 @@ const baseIsEqual = (value, other, stack) => {
     if (isArray || tag === '[object Arguments]') {
       return (
         value.length === other.length &&
-        Array.prototype.every.call(value, (item, index) => baseIsEqual(item, other[index], stack))
+        Array.prototype.every.call(value, (item: unknown, index: number) =>
+          baseIsEqual(item, other[index], stack),
+        )
       )
     }
 
@@ -158,10 +173,11 @@ const baseIsEqual = (value, other, stack) => {
 }
 
 /** Deep comparison, functions & DOM nodes are compared by identity. */
-export const isEqual = (value, other) => baseIsEqual(value, other, new Map())
+export const isEqual = (value: unknown, other: unknown): boolean =>
+  baseIsEqual(value, other, new Map())
 
 // Partial deep comparison used by "matches" iteratee shorthands
-const isPartialMatch = (value, source) => {
+const isPartialMatch = (value: any, source: any): boolean => {
   // Arrays match partially & unordered: every item of the source is contained in the value
   if (Array.isArray(source)) {
     return (
@@ -187,19 +203,19 @@ const isPartialMatch = (value, source) => {
 // ----------------------------------------
 
 // A key that exists on the object is used as is, i.e. "a.b" for { 'a.b': 1 }
-const toPath = (path, object?) => {
+const toPath = (path: unknown, object?: unknown): PropertyKey[] => {
   if (Array.isArray(path)) return path
   if (typeof path === 'number' || typeof path === 'symbol') return [path]
 
   const string = toStringValue(path)
   if (!/[.[\]]/.test(string) || (object != null && string in Object(object))) return [string]
 
-  const result = []
+  const result: string[] = []
   if (string.charCodeAt(0) === 46 /* . */) result.push('')
 
   string.replace(
     /[^.[\]]+|\[(?:([^"'][^[]*)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g,
-    (match, number, quote, subString): any => {
+    (match: string, number: string, quote: string, subString: string): any => {
       result.push(quote ? subString.replace(/\\(\\)?/g, '$1') : number || match)
     },
   )
@@ -207,9 +223,9 @@ const toPath = (path, object?) => {
   return result
 }
 
-export const get = (object, path, defaultValue?) => {
+export const get = (object: any, path: Path, defaultValue?: any): any => {
   const pathKeys = toPath(path, object)
-  let result = object
+  let result: any = object
   let index = 0
 
   while (result != null && index < pathKeys.length) {
@@ -223,9 +239,9 @@ export const get = (object, path, defaultValue?) => {
   return result === undefined ? defaultValue : result
 }
 
-export const has = (object, path) => {
+export const has = (object: any, path: Path): boolean => {
   const keys = toPath(path, object)
-  let current = object
+  let current: any = object
 
   for (let i = 0; i < keys.length; i += 1) {
     if (!hasOwn(current, keys[i])) return false
@@ -235,9 +251,9 @@ export const has = (object, path) => {
   return keys.length > 0
 }
 
-const hasIn = (object, path) => {
+const hasIn = (object: any, path: Path): boolean => {
   const keys = toPath(path, object)
-  let current = object
+  let current: any = object
 
   for (let i = 0; i < keys.length; i += 1) {
     if (current == null || !(keys[i] in Object(current))) return false
@@ -252,22 +268,22 @@ const hasIn = (object, path) => {
 // ----------------------------------------
 
 // Supports lodash shorthands: "prop.path", { partial: 'match' }, ['prop', value]
-const toIteratee = (iteratee) => {
-  if (typeof iteratee === 'function') return iteratee
+const toIteratee = (iteratee: Iteratee): IterateeFunction => {
+  if (typeof iteratee === 'function') return iteratee as IterateeFunction
   if (iteratee == null) return identity
 
   if (Array.isArray(iteratee)) {
     const [path, source] = iteratee
-    return (value) => isPartialMatch(get(value, path), source) && hasIn(value, path)
+    return (value: unknown) => isPartialMatch(get(value, path), source) && hasIn(value, path)
   }
 
-  if (typeof iteratee === 'object') return (value) => isPartialMatch(value, iteratee)
+  if (typeof iteratee === 'object') return (value: unknown) => isPartialMatch(value, iteratee)
 
-  return (value) => get(value, iteratee)
+  return (value: unknown) => get(value, iteratee)
 }
 
 // Keys to iterate: indexes of array-likes, otherwise own enumerable keys
-const collectionKeys = (collection) => {
+const collectionKeys = (collection: Collection): any[] => {
   if (collection == null) return []
   if (isArrayLike(collection)) return Array.from({ length: collection.length }, (v, i) => i)
 
@@ -278,11 +294,13 @@ const collectionKeys = (collection) => {
 // Collections
 // ----------------------------------------
 
-export const keys = (object) => (object == null ? [] : Object.keys(Object(object)))
+export const keys = (object: unknown): string[] =>
+  object == null ? [] : Object.keys(Object(object))
 
-export const values = (object) => keys(object).map((key) => Object(object)[key])
+export const values = (object: unknown): any[] =>
+  keys(object).map((key) => (Object(object) as Record<string, any>)[key])
 
-export const size = (collection) => {
+export const size = (collection: Collection): number => {
   if (collection == null) return 0
   if (isArrayLike(collection)) return collection.length
 
@@ -292,7 +310,7 @@ export const size = (collection) => {
   return keys(collection).length
 }
 
-export const forEach = (collection, iteratee) => {
+export const forEach = (collection: Collection, iteratee?: Iteratee): any => {
   const callback = toIteratee(iteratee)
   const indexes = collectionKeys(collection)
 
@@ -305,13 +323,13 @@ export const forEach = (collection, iteratee) => {
 
 export const each = forEach
 
-export const map = (collection, iteratee) => {
+export const map = (collection: Collection, iteratee?: Iteratee): any[] => {
   const callback = toIteratee(iteratee)
 
   return collectionKeys(collection).map((key) => callback(collection[key], key, collection))
 }
 
-export const filter = (collection, predicate) => {
+export const filter = (collection: Collection, predicate?: Iteratee): any[] => {
   const callback = toIteratee(predicate)
 
   return collectionKeys(collection)
@@ -319,14 +337,14 @@ export const filter = (collection, predicate) => {
     .map((key) => collection[key])
 }
 
-export const find = (collection, predicate) => {
+export const find = (collection: Collection, predicate?: Iteratee): any => {
   const callback = toIteratee(predicate)
   const key = collectionKeys(collection).find((k) => callback(collection[k], k, collection))
 
   return key === undefined ? undefined : collection[key]
 }
 
-export const findIndex = (array, predicate) => {
+export const findIndex = (array: Collection, predicate?: Iteratee): number => {
   if (!isArrayLike(array)) return -1
 
   const callback = toIteratee(predicate)
@@ -337,21 +355,25 @@ export const findIndex = (array, predicate) => {
   return -1
 }
 
-export const some = (collection, predicate) => {
+export const some = (collection: Collection, predicate?: Iteratee): boolean => {
   const callback = toIteratee(predicate)
 
   return collectionKeys(collection).some((key) => !!callback(collection[key], key, collection))
 }
 
-export const every = (collection, predicate) => {
+export const every = (collection: Collection, predicate?: Iteratee): boolean => {
   const callback = toIteratee(predicate)
 
   return collectionKeys(collection).every((key) => !!callback(collection[key], key, collection))
 }
 
-export function reduce(collection, iteratee, accumulator) {
+export function reduce(
+  collection: Collection,
+  iteratee: (accumulator: any, value: any, key: any, collection: any) => any,
+  accumulator?: any,
+): any {
   const indexes = collectionKeys(collection)
-  let result = accumulator
+  let result: any = accumulator
   let start = 0
 
   if (arguments.length < 3) {
@@ -366,9 +388,9 @@ export function reduce(collection, iteratee, accumulator) {
   return result
 }
 
-export const includes = (collection, value, fromIndex = 0) => {
+export const includes = (collection: Collection, value: unknown, fromIndex = 0): boolean => {
   if (collection == null) return false
-  if (isString(collection)) return String(collection).indexOf(value, fromIndex) > -1
+  if (isString(collection)) return String(collection).indexOf(value as string, fromIndex) > -1
 
   const list = isArrayLike(collection) ? collection : values(collection)
   const start = fromIndex < 0 ? Math.max(list.length + fromIndex, 0) : fromIndex
@@ -381,69 +403,30 @@ export const includes = (collection, value, fromIndex = 0) => {
   return false
 }
 
-export const keyBy = (collection, iteratee) => {
+export const keyBy = (collection: Collection, iteratee?: Iteratee): Record<string, any> => {
   const callback = toIteratee(iteratee)
 
   return reduce(
     collection,
     (result, value, key) => {
-      result[callback(value, key, collection)] = value
+      result[callback(value, key, collection) as PropertyKey] = value
       return result
     },
     {},
   )
 }
 
-// Compares like lodash, "undefined" & "NaN" go last
-const compareAscending = (value, other) => {
-  if (value === other) return 0
-
-  const isValueReflexive = value === value
-  const isOtherReflexive = other === other
-
-  if (value === undefined || !isValueReflexive)
-    return isOtherReflexive && other !== undefined ? 1 : 0
-  if (other === undefined || !isOtherReflexive) return -1
-
-  if (value === null && other !== null) return 1
-  if (other === null) return -1
-
-  if (value > other) return 1
-  if (value < other) return -1
-
-  return 0
-}
-
-export const sortBy = (collection, ...iteratees) => {
-  const callbacks = (iteratees.length ? iteratees.flat() : [identity]).map(toIteratee)
-
-  return map(collection, (value, key) => ({
-    criteria: callbacks.map((callback) => callback(value)),
-    index: key,
-    value,
-  }))
-    .sort((a, b) => {
-      for (let i = 0; i < a.criteria.length; i += 1) {
-        const result = compareAscending(a.criteria[i], b.criteria[i])
-        if (result) return result
-      }
-
-      return a.index < b.index ? -1 : 1
-    })
-    .map(({ value }) => value)
-}
-
 // ----------------------------------------
 // Arrays
 // ----------------------------------------
 
-const toArrayLike = (array) => (isArrayLikeObject(array) ? Array.from(array) : [])
+const toArrayLike = (array: unknown): any[] => (isArrayLikeObject(array) ? Array.from(array) : [])
 
 // Like "toArrayLike()", but also iterates strings
-const toList = (array) => (array != null && array.length ? Array.from(array) : [])
+const toList = (array: any): any[] => (array != null && array.length ? Array.from(array) : [])
 
-export const uniq = (array) => {
-  const result = []
+export const uniq = (array: Collection): any[] => {
+  const result: any[] = []
 
   toList(array).forEach((value) => {
     if (!includes(result, value)) result.push(value)
@@ -452,40 +435,41 @@ export const uniq = (array) => {
   return result
 }
 
-export const compact = (array) => toList(array).filter(Boolean)
+export const compact = (array: Collection): any[] => toList(array).filter(Boolean)
 
-export const first = (array) => (array != null && array.length ? array[0] : undefined)
+export const first = (array: Collection): any =>
+  array != null && array.length ? array[0] : undefined
 
-export const take = (array, n = 1) =>
+export const take = (array: Collection, n = 1): any[] =>
   array?.length ? Array.from(array).slice(0, Math.max(n, 0)) : []
 
-export const dropRight = (array, n = 1) =>
+export const dropRight = (array: Collection, n = 1): any[] =>
   array?.length ? Array.from(array).slice(0, Math.max(array.length - n, 0)) : []
 
-export const without = (array, ...valuesToRemove) =>
+export const without = (array: Collection, ...valuesToRemove: unknown[]): any[] =>
   toArrayLike(array).filter((value) => !includes(valuesToRemove, value))
 
-export const difference = (array, ...others) => {
+export const difference = (array: Collection, ...others: unknown[]): any[] => {
   const excluded = others.filter(isArrayLikeObject).flatMap((other) => Array.from(other))
 
   return toArrayLike(array).filter((value) => !includes(excluded, value))
 }
 
-export const union = (...arrays) =>
+export const union = (...arrays: unknown[]): any[] =>
   uniq(arrays.filter(isArrayLikeObject).flatMap((array) => Array.from(array)))
 
-export const intersection = (...arrays) => {
+export const intersection = (...arrays: unknown[]): any[] => {
   const lists = arrays.map(toArrayLike)
   const [firstList = [], ...others] = lists
 
   return uniq(firstList).filter((value) => others.every((other) => includes(other, value)))
 }
 
-export const fromPairs = (pairs) => {
-  const result = {}
+export const fromPairs = (pairs: Collection): Record<PropertyKey, any> => {
+  const result: Record<PropertyKey, any> = {}
 
   if (pairs != null) {
-    Array.from(pairs).forEach(([key, value]) => {
+    Array.from(pairs as ArrayLike<[PropertyKey, any]>).forEach(([key, value]) => {
       result[key] = value
     })
   }
@@ -497,14 +481,17 @@ export const fromPairs = (pairs) => {
 // Objects
 // ----------------------------------------
 
-export const pick = (object, ...paths) => {
-  const result = {}
+export const pick = (
+  object: any,
+  ...paths: (Path | readonly Path[])[]
+): Record<PropertyKey, any> => {
+  const result: Record<PropertyKey, any> = {}
   if (object == null) return result
 
   paths.flat().forEach((path) => {
     if (hasIn(object, path)) {
       const pathKeys = toPath(path, object)
-      let target = result
+      let target: Record<PropertyKey, any> = result
 
       pathKeys.slice(0, -1).forEach((key) => {
         target[key] = isObject(target[key]) ? target[key] : {}
@@ -518,23 +505,9 @@ export const pick = (object, ...paths) => {
   return result
 }
 
-export const pickBy = (object, predicate) => {
-  const result = {}
-  if (object == null) return result
-
-  const callback = toIteratee(predicate)
-
-  // Own & inherited enumerable keys
-  for (const key in object) {
-    if (callback(object[key], key)) result[key] = object[key]
-  }
-
-  return result
-}
-
-export const mapValues = (object, iteratee) => {
+export const mapValues = (object: any, iteratee?: Iteratee): Record<string, any> => {
   const callback = toIteratee(iteratee)
-  const result = {}
+  const result: Record<string, any> = {}
 
   keys(object).forEach((key) => {
     result[key] = callback(object[key], key, object)
@@ -543,8 +516,8 @@ export const mapValues = (object, iteratee) => {
   return result
 }
 
-export const invert = (object) => {
-  const result = {}
+export const invert = (object: any): Record<string, string> => {
+  const result: Record<string, string> = {}
 
   keys(object).forEach((key) => {
     let value = object[key]
@@ -555,32 +528,13 @@ export const invert = (object) => {
   return result
 }
 
-export function transform(object, iteratee, accumulator) {
-  const isArray = Array.isArray(object)
-  let result = accumulator
-
-  if (arguments.length < 3) {
-    if (isArray) result = []
-    else if (isObject(object)) result = Object.create(Object.getPrototypeOf(object))
-    else result = {}
-  }
-
-  const indexes = isArray ? collectionKeys(object) : keys(object)
-
-  for (let i = 0; i < indexes.length; i += 1) {
-    if (iteratee(result, object[indexes[i]], indexes[i], object) === false) break
-  }
-
-  return result
-}
-
 // ----------------------------------------
 // Functions
 // ----------------------------------------
 
 export const noop = () => undefined
 
-export function invoke(object, path, ...args) {
+export function invoke(object: any, path: Path, ...args: any[]): any {
   const pathKeys = toPath(path)
   const parent = pathKeys.length === 1 ? object : get(object, pathKeys.slice(0, -1))
   const fn = parent == null ? undefined : parent[pathKeys[pathKeys.length - 1]]
@@ -588,12 +542,15 @@ export function invoke(object, path, ...args) {
   return fn == null ? undefined : fn.apply(parent, args)
 }
 
-export function memoize(fn, resolver?) {
+export function memoize<F extends (...args: any[]) => any>(
+  fn: F,
+  resolver?: (...args: Parameters<F>) => unknown,
+): F & { cache: Map<unknown, ReturnType<F>> } {
   if (typeof fn !== 'function' || (resolver != null && typeof resolver !== 'function')) {
     throw new TypeError('Expected a function')
   }
 
-  const memoized = function memoized(...args) {
+  const memoized = function memoized(this: unknown, ...args: Parameters<F>) {
     const key = resolver ? resolver.apply(this, args) : args[0]
     const { cache } = memoized
 
@@ -606,36 +563,22 @@ export function memoize(fn, resolver?) {
   }
   memoized.cache = new Map()
 
-  return memoized
+  return memoized as F & typeof memoized
 }
 
 export const partialRight =
-  (fn, ...partials) =>
-  (...args) =>
+  (fn: (...args: any[]) => any, ...partials: any[]) =>
+  (...args: any[]): any =>
     fn(...args, ...partials)
 
-export const times = (n, iteratee = identity) => {
+export const times = (n: number, iteratee: (index: number) => any = identity): any[] => {
   if (!(n >= 1) || n > Number.MAX_SAFE_INTEGER) return []
 
   return Array.from({ length: Math.floor(n) }, (v, i) => iteratee(i))
 }
 
-// ----------------------------------------
-// Numbers
-// ----------------------------------------
-
-export const sum = (array) => {
-  let result
-
-  toList(array).forEach((value) => {
-    if (value !== undefined) result = result === undefined ? value : result + value
-  })
-
-  return result === undefined ? 0 : result
-}
-
-export const min = (array) => {
-  let result
+export const min = (array: Collection): any => {
+  let result: any
 
   toList(array).forEach((value) => {
     if (value != null && (result === undefined ? value === value : value < result)) {
@@ -646,7 +589,7 @@ export const min = (array) => {
   return result
 }
 
-export const clamp = (number, lower, upper) => {
+export const clamp = (number: any, lower?: number, upper?: number): number => {
   const value = +number
   if (value !== value) return value
 
@@ -657,7 +600,7 @@ export const clamp = (number, lower, upper) => {
   return result
 }
 
-export const inRange = (number, start, end) => {
+export const inRange = (number: number, start: number, end?: number): boolean => {
   let from = start
   let to = end
 
@@ -669,7 +612,7 @@ export const inRange = (number, start, end) => {
   return number >= Math.min(from, to) && number < Math.max(from, to)
 }
 
-export const range = (start, end?, step?) => {
+export const range = (start: number, end?: number, step?: number): number[] => {
   let from = start
   let to = end
 
@@ -685,7 +628,7 @@ export const range = (start, end?, step?) => {
 }
 
 // Rounds with exponential notation to avoid floating point errors, i.e. round(1.005, 2) is 1.01
-export const round = (number, precision = 0) => {
+export const round = (number: number, precision = 0): number => {
   const digits = Math.min(Math.max(precision, -292), 292)
   if (!digits) return Math.round(number)
 
@@ -696,19 +639,14 @@ export const round = (number, precision = 0) => {
   return +`${pair[0]}e${+pair[1] - digits}`
 }
 
-// ----------------------------------------
-// Strings
-// ----------------------------------------
-
-export const trim = (string) => toStringValue(string).trim()
-
-export const startsWith = (string, target, position = 0) =>
+export const startsWith = (string: unknown, target: unknown, position = 0): boolean =>
   toStringValue(string).startsWith(String(target), position)
 
-export const escapeRegExp = (string) => toStringValue(string).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+export const escapeRegExp = (string: unknown): string =>
+  toStringValue(string).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
 
 // Latin-1 Supplement & Latin Extended-A letters without a canonical decomposition
-const deburredLetters = {
+const deburredLetters: Record<string, string> = {
   Æ: 'Ae',
   æ: 'ae',
   Ð: 'D',
@@ -741,7 +679,7 @@ const deburredLetters = {
 }
 
 /** Converts Latin-1 Supplement & Latin Extended-A letters to basic Latin, removes combining marks. */
-export const deburr = (string) =>
+export const deburr = (string: unknown): string =>
   toStringValue(string)
     .replace(
       /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g,
@@ -758,13 +696,13 @@ const reWordBreak = /[\s\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\xbf\xd7\xf7\u2000-\u206
 const reWordPart =
   /[A-Z\xc0-\xd6\xd8-\xde]+(?=[A-Z\xc0-\xd6\xd8-\xde][^A-Z\xc0-\xd6\xd8-\xde\d])|[A-Z\xc0-\xd6\xd8-\xde]?[^A-Z\xc0-\xd6\xd8-\xde\d]+|[A-Z\xc0-\xd6\xd8-\xde]+|\d+/g
 
-const toWords = (string) =>
+const toWords = (string: unknown): string[] =>
   toStringValue(string)
     .split(reWordBreak)
     .flatMap((token) => token.match(reWordPart) || [])
 
 /** Converts a string to "Start Case", i.e. "fooBar" to "Foo Bar". */
-export const startCase = (string) =>
+export const startCase = (string: unknown): string =>
   toWords(deburr(string).replace(/['\u2019]/g, ''))
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')

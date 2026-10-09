@@ -24,9 +24,10 @@
  *    hoisted and exposed by the HOC.
  */
 import * as React from 'react'
-import { each, filter, has, intersection, isEmpty, keys, startsWith } from './utils'
+import { filter, intersection, isEmpty, keys, startsWith } from './utils'
 
-const getDefaultPropName = (prop) => `default${prop[0].toUpperCase() + prop.slice(1)}`
+const getDefaultPropName = (prop: string): string =>
+  `default${prop[0].toUpperCase() + prop.slice(1)}`
 
 /**
  * Return the auto controlled state value for a give prop. The initial value is chosen in this order:
@@ -42,7 +43,12 @@ const getDefaultPropName = (prop) => `default${prop[0].toUpperCase() + prop.slic
  *  @param {object} [state] A state object
  *  @param {boolean} [includeDefaults=false] Whether or not to heed the default props or initial state
  */
-const getAutoControlledStateValue = (propName, props, state, includeDefaults = false) => {
+const getAutoControlledStateValue = (
+  propName: string,
+  props: Record<string, any>,
+  state?: Record<string, any> | null,
+  includeDefaults = false,
+): any => {
   // regular props
   const propValue = props[propName]
   if (propValue !== undefined) return propValue
@@ -83,7 +89,7 @@ export default class ModernAutoControlledComponent<P = any, S = any> extends Rea
     const state = this?.getInitialAutoControlledState?.(this.props) || {}
 
     if (process.env.NODE_ENV !== 'production') {
-      const { defaultProps, name, propTypes, getDerivedStateFromProps } = this.constructor as any
+      const { defaultProps, name, getDerivedStateFromProps } = this.constructor as any
 
       // require usage of getAutoControlledStateFromProps()
       if (getDerivedStateFromProps !== ModernAutoControlledComponent.getDerivedStateFromProps) {
@@ -91,23 +97,6 @@ export default class ModernAutoControlledComponent<P = any, S = any> extends Rea
           `Auto controlled ${name} must specify a static getAutoControlledStateFromProps() instead of getDerivedStateFromProps().`,
         )
       }
-
-      // require propTypes
-      each(autoControlledProps, (prop) => {
-        const defaultProp = getDefaultPropName(prop)
-        // regular prop
-        if (!has(propTypes, defaultProp)) {
-          console.error(
-            `${name} is missing "${defaultProp}" propTypes validation for auto controlled prop "${prop}".`,
-          )
-        }
-        // its default prop
-        if (!has(propTypes, prop)) {
-          console.error(
-            `${name} is missing propTypes validation for auto controlled prop "${prop}".`,
-          )
-        }
-      })
 
       // prevent autoControlledProps in defaultProps
       //
@@ -135,7 +124,7 @@ export default class ModernAutoControlledComponent<P = any, S = any> extends Rea
       //
       // Default props are automatically handled.
       // Listing defaults in autoControlledProps would result in allowing defaultDefaultValue props.
-      const illegalAutoControlled = filter(autoControlledProps, (prop) =>
+      const illegalAutoControlled = filter(autoControlledProps, (prop: string) =>
         startsWith(prop, 'default'),
       )
       if (!isEmpty(illegalAutoControlled)) {
@@ -153,22 +142,26 @@ export default class ModernAutoControlledComponent<P = any, S = any> extends Rea
     // Set initial state by copying auto controlled props to state.
     // Also look for the default prop for any auto controlled props (foo => defaultFoo)
     // so we can set initial values from defaults.
-    const initialAutoControlledState = autoControlledProps.reduce((acc, prop) => {
-      acc[prop] = getAutoControlledStateValue(prop, this.props, state, true)
+    const props: Record<string, any> = this.props
+    const initialAutoControlledState = autoControlledProps.reduce(
+      (acc: Record<string, any>, prop: string) => {
+        acc[prop] = getAutoControlledStateValue(prop, props, state, true)
 
-      if (process.env.NODE_ENV !== 'production') {
-        const defaultPropName = getDefaultPropName(prop)
-        const { name } = this.constructor as any
-        // prevent defaultFoo={} along side foo={}
-        if (this.props[defaultPropName] !== undefined && this.props[prop] !== undefined) {
-          console.error(
-            `${name} prop "${prop}" is auto controlled. Specify either ${defaultPropName} or ${prop}, but not both.`,
-          )
+        if (process.env.NODE_ENV !== 'production') {
+          const defaultPropName = getDefaultPropName(prop)
+          const { name } = this.constructor as any
+          // prevent defaultFoo={} along side foo={}
+          if (props[defaultPropName] !== undefined && props[prop] !== undefined) {
+            console.error(
+              `${name} prop "${prop}" is auto controlled. Specify either ${defaultPropName} or ${prop}, but not both.`,
+            )
+          }
         }
-      }
 
-      return acc
-    }, {})
+        return acc
+      },
+      {},
+    )
 
     this.state = {
       ...state,
@@ -178,18 +171,21 @@ export default class ModernAutoControlledComponent<P = any, S = any> extends Rea
     }
   }
 
-  static getDerivedStateFromProps(props, state) {
+  static getDerivedStateFromProps(props: Record<string, any>, state: any) {
     const { autoControlledProps, getAutoControlledStateFromProps } = state
 
     // Solve the next state for autoControlledProps
-    const newStateFromProps = autoControlledProps.reduce((acc, prop) => {
-      const isNextDefined = props[prop] !== undefined
+    const newStateFromProps = autoControlledProps.reduce(
+      (acc: Record<string, any>, prop: string) => {
+        const isNextDefined = props[prop] !== undefined
 
-      // if next is defined then use its value
-      if (isNextDefined) acc[prop] = props[prop]
+        // if next is defined then use its value
+        if (isNextDefined) acc[prop] = props[prop]
 
-      return acc
-    }, {})
+        return acc
+      },
+      {},
+    )
 
     // Due to the inheritance of the AutoControlledComponent we should call its
     // getAutoControlledStateFromProps() and merge it with the existing state

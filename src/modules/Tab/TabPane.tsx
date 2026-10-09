@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -61,25 +59,7 @@ const TabPane = React.forwardRef<HTMLDivElement, TabPaneProps>(function (props, 
 }) as ForwardRefComponent<TabPaneProps, HTMLDivElement>
 
 TabPane.displayName = 'TabPane'
-TabPane.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** A tab pane can be active. */
-  active: PropTypes.bool,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** A Tab.Pane can display a loading indicator. */
-  loading: PropTypes.bool,
-}
+TabPane.handledProps = ['active', 'as', 'children', 'className', 'content', 'loading']
 
 TabPane.create = createShorthandFactory(TabPane, (content) => ({ content }))
 

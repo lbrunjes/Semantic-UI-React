@@ -7,7 +7,10 @@ import validateTrigger from './validateTrigger'
  * @param {React.ReactNode} trigger
  * @param {React.Ref} triggerRef
  */
-function useTrigger(trigger, triggerRef): [any, React.ReactElement<any> | null] {
+function useTrigger(
+  trigger: React.ReactNode,
+  triggerRef: React.Ref<any> | undefined,
+): [any, React.ReactElement<any> | null] {
   const ref = useMergedRefs(getElementRef(trigger), triggerRef)
 
   if (trigger) {
@@ -16,7 +19,7 @@ function useTrigger(trigger, triggerRef): [any, React.ReactElement<any> | null] 
       validateTrigger(trigger)
     }
 
-    return [ref, React.cloneElement(trigger, { ref })]
+    return [ref, React.cloneElement(trigger as React.ReactElement<any>, { ref })]
   }
 
   return [ref, null]

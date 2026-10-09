@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { cx, getComponentType, getUnhandledProps } from '../../lib'
@@ -35,15 +34,6 @@ const PlaceholderLine = React.forwardRef<HTMLDivElement, PlaceholderLineProps>(
 ) as ForwardRefComponent<PlaceholderLineProps, HTMLDivElement>
 
 PlaceholderLine.displayName = 'PlaceholderLine'
-PlaceholderLine.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** A line can specify how long its contents should appear. */
-  length: PropTypes.oneOf(['full', 'very long', 'long', 'medium', 'short', 'very short']),
-}
+PlaceholderLine.handledProps = ['as', 'className', 'length']
 
 export default PlaceholderLine

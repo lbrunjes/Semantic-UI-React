@@ -1,13 +1,10 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
-  SUI,
   getKeyOnly,
   getKeyOrValueAndKey,
   getValueAndKey,
@@ -23,6 +20,7 @@ import type {
   SemanticSIZES,
   SemanticWIDTHS,
   ForwardRefComponent,
+  SemanticShorthandItem,
 } from '../../generic'
 import type { ButtonProps } from './Button'
 
@@ -161,81 +159,35 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(function 
 
   return (
     <ElementType {...rest} className={classes} ref={ref}>
-      {map(buttons, (button) => Button.create(button))}
+      {map(buttons, (button: SemanticShorthandItem<ButtonProps>) => Button.create(button))}
     </ElementType>
   )
 }) as ForwardRefComponent<ButtonGroupProps, HTMLDivElement>
 
 ButtonGroup.displayName = 'ButtonGroup'
-ButtonGroup.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Groups can be attached to other content. */
-  attached: PropTypes.oneOfType([
-    PropTypes.bool,
-    PropTypes.oneOf(['left', 'right', 'top', 'bottom']),
-  ]),
-
-  /** Groups can be less pronounced. */
-  basic: PropTypes.bool,
-
-  /** Array of shorthand Button values. */
-  buttons: customPropTypes.collectionShorthand,
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Groups can have a shared color. */
-  color: PropTypes.oneOf(SUI.COLORS),
-
-  /** Groups can reduce their padding to fit into tighter spaces. */
-  compact: PropTypes.bool,
-
-  /** Shorthand for primary content. */
-  content: customPropTypes.contentShorthand,
-
-  /** Groups can be aligned to the left or right of its container. */
-  floated: PropTypes.oneOf(SUI.FLOATS),
-
-  /** Groups can take the width of their container. */
-  fluid: PropTypes.bool,
-
-  /** Groups can be formatted as icons. */
-  icon: PropTypes.bool,
-
-  /** Groups can be formatted to appear on dark backgrounds. */
-  inverted: PropTypes.bool,
-
-  /** Groups can be formatted as labeled icon buttons. */
-  labeled: PropTypes.bool,
-
-  /** Groups can hint towards a negative consequence. */
-  negative: PropTypes.bool,
-
-  /** Groups can hint towards a positive consequence. */
-  positive: PropTypes.bool,
-
-  /** Groups can be formatted to show different levels of emphasis. */
-  primary: PropTypes.bool,
-
-  /** Groups can be formatted to show different levels of emphasis. */
-  secondary: PropTypes.bool,
-
-  /** Groups can have different sizes. */
-  size: PropTypes.oneOf(SUI.SIZES),
-
-  /** Groups can be formatted to toggle on and off. */
-  toggle: PropTypes.bool,
-
-  /** Groups can be formatted to appear vertically. */
-  vertical: PropTypes.bool,
-
-  /** Groups can have their widths divided evenly. */
-  widths: PropTypes.oneOf(SUI.WIDTHS),
-}
+ButtonGroup.handledProps = [
+  'as',
+  'attached',
+  'basic',
+  'buttons',
+  'children',
+  'className',
+  'color',
+  'compact',
+  'content',
+  'floated',
+  'fluid',
+  'icon',
+  'inverted',
+  'labeled',
+  'negative',
+  'positive',
+  'primary',
+  'secondary',
+  'size',
+  'toggle',
+  'vertical',
+  'widths',
+]
 
 export default ButtonGroup

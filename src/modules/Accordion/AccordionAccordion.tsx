@@ -1,10 +1,8 @@
-import PropTypes from 'prop-types'
 import * as React from 'react'
 
 import {
   childrenUtils,
   createShorthandFactory,
-  customPropTypes,
   cx,
   getComponentType,
   getUnhandledProps,
@@ -13,7 +11,11 @@ import {
 } from '../../lib'
 import AccordionPanel from './AccordionPanel'
 import { includes, map, without } from '../../lib/utils'
-import type { ForwardRefComponent, SemanticShorthandCollection } from '../../generic'
+import type {
+  ForwardRefComponent,
+  SemanticShorthandCollection,
+  SemanticShorthandItem,
+} from '../../generic'
 import type { AccordionPanelProps } from './AccordionPanel'
 import type { AccordionTitleProps } from './AccordionTitle'
 
@@ -57,7 +59,11 @@ export interface StrictAccordionAccordionProps {
  * @param {Number} activeIndex
  * @param {Number} itemIndex
  */
-function isIndexActive(exclusive, activeIndex, itemIndex) {
+function isIndexActive(
+  exclusive: boolean,
+  activeIndex: number | number[],
+  itemIndex: number | string | undefined,
+) {
   return exclusive ? activeIndex === itemIndex : includes(activeIndex, itemIndex)
 }
 
@@ -66,7 +72,11 @@ function isIndexActive(exclusive, activeIndex, itemIndex) {
  * @param {Number} activeIndex
  * @param {Number} itemIndex
  */
-function computeNewIndex(exclusive, activeIndex, itemIndex) {
+function computeNewIndex(
+  exclusive: boolean,
+  activeIndex: number | number[],
+  itemIndex: number | string | undefined,
+) {
   if (exclusive) {
     return itemIndex === activeIndex ? -1 : itemIndex
   }
@@ -76,7 +86,8 @@ function computeNewIndex(exclusive, activeIndex, itemIndex) {
     return without(activeIndex, itemIndex)
   }
 
-  return [...activeIndex, itemIndex]
+  // `activeIndex` is an array when `exclusive` is false
+  return [...(activeIndex as number[]), itemIndex]
 }
 
 /**
@@ -95,12 +106,14 @@ const AccordionAccordion = React.forwardRef<HTMLDivElement, AccordionAccordionPr
     const rest = getUnhandledProps(AccordionAccordion, props)
     const ElementType = getComponentType(props)
 
-    const handleTitleClick = useEventCallback((e, titleProps) => {
-      const { index } = titleProps
+    const handleTitleClick = useEventCallback(
+      (e: React.MouseEvent<HTMLDivElement>, titleProps: AccordionTitleProps) => {
+        const { index } = titleProps
 
-      setActiveIndex(computeNewIndex(exclusive, activeIndex, index))
-      props?.onTitleClick?.(e, titleProps)
-    })
+        setActiveIndex(computeNewIndex(exclusive, activeIndex, index))
+        props?.onTitleClick?.(e, titleProps)
+      },
+    )
 
     if (process.env.NODE_ENV !== 'production') {
       // Following eslint error is ignored because process.env.NODE_ENV does not change during runtime,
@@ -120,7 +133,7 @@ const AccordionAccordion = React.forwardRef<HTMLDivElement, AccordionAccordionPr
     return (
       <ElementType {...rest} className={classes} ref={ref}>
         {childrenUtils.isNil(children)
-          ? map(panels, (panel, index) =>
+          ? map(panels, (panel: SemanticShorthandItem<AccordionPanelProps>, index: number) =>
               AccordionPanel.create(panel, {
                 defaultProps: {
                   active: isIndexActive(exclusive, activeIndex, index),
@@ -136,50 +149,16 @@ const AccordionAccordion = React.forwardRef<HTMLDivElement, AccordionAccordionPr
 ) as ForwardRefComponent<AccordionAccordionProps, HTMLDivElement>
 
 AccordionAccordion.displayName = 'AccordionAccordion'
-AccordionAccordion.propTypes = {
-  /** An element type to render as (string or function). */
-  as: PropTypes.elementType,
-
-  /** Index of the currently active panel. */
-  activeIndex: customPropTypes.every([
-    customPropTypes.disallow(['children']),
-    PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.number), PropTypes.number]),
-  ]),
-
-  /** Primary content. */
-  children: PropTypes.node,
-
-  /** Additional classes. */
-  className: PropTypes.string,
-
-  /** Initial activeIndex value. */
-  defaultActiveIndex: customPropTypes.every([
-    customPropTypes.disallow(['children']),
-    PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.number), PropTypes.number]),
-  ]),
-
-  /** Only allow one panel open at a time. */
-  exclusive: PropTypes.bool,
-
-  /**
-   * Called when a panel title is clicked.
-   *
-   * @param {SyntheticEvent} event - React's original SyntheticEvent.
-   * @param {object} data - All item props.
-   */
-  onTitleClick: customPropTypes.every([customPropTypes.disallow(['children']), PropTypes.func]),
-
-  /** Shorthand array of props for Accordion. */
-  panels: customPropTypes.every([
-    customPropTypes.disallow(['children']),
-    PropTypes.arrayOf(
-      PropTypes.shape({
-        content: customPropTypes.itemShorthand,
-        title: customPropTypes.itemShorthand,
-      }),
-    ),
-  ]),
-}
+AccordionAccordion.handledProps = [
+  'activeIndex',
+  'as',
+  'children',
+  'className',
+  'defaultActiveIndex',
+  'exclusive',
+  'onTitleClick',
+  'panels',
+]
 
 AccordionAccordion.create = createShorthandFactory(AccordionAccordion, (content) => ({ content }))
 
