@@ -1,0 +1,25 @@
+import * as React from 'react'
+
+import { getElementRef, useMergedRefs } from '../../../lib'
+import validateTrigger from './validateTrigger'
+
+/**
+ * @param {React.ReactNode} trigger
+ * @param {React.Ref} triggerRef
+ */
+function useTrigger(trigger, triggerRef): [any, React.ReactElement<any> | null] {
+  const ref = useMergedRefs(getElementRef(trigger), triggerRef)
+
+  if (trigger) {
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== 'production') {
+      validateTrigger(trigger)
+    }
+
+    return [ref, React.cloneElement(trigger, { ref })]
+  }
+
+  return [ref, null]
+}
+
+export default useTrigger
