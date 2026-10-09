@@ -38,7 +38,8 @@ export default function hasValidTypings(Component, options = {}) {
   const { displayName, repoPath } = componentInfoContext.byDisplayName[getComponentName(Component)]
   const { ignoredTypingsProps = [], forwardsRef = true, requiredProps } = options
 
-  const tsFile = repoPath.replace('src/', '').replace('.js', '.d.ts')
+  // TypeScript sources contain their typings, JavaScript sources have ".d.ts" files
+  const tsFile = repoPath.replace('src/', '').replace(/\.js$/, '.d.ts')
   const tsContent = requireTs(tsFile)
 
   describe('typings', () => {

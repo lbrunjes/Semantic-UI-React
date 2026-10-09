@@ -1,0 +1,86 @@
+import PropTypes from 'prop-types'
+import * as React from 'react'
+
+import {
+  childrenUtils,
+  createShorthandFactory,
+  customPropTypes,
+  cx,
+  getComponentType,
+  getUnhandledProps,
+  getKeyOnly,
+} from '../../lib'
+import Segment from '../../elements/Segment/Segment'
+import type { ForwardRefComponent, SemanticShorthandContent } from '../../generic'
+
+export interface TabPaneProps extends StrictTabPaneProps {
+  [key: string]: any
+}
+
+export interface StrictTabPaneProps {
+  /** An element type to render as (string or function). */
+  as?: any
+
+  /** A tab pane can be active. */
+  active?: boolean
+
+  /** Primary content. */
+  children?: React.ReactNode
+
+  /** Additional classes. */
+  className?: string
+
+  /** Shorthand for primary content. */
+  content?: SemanticShorthandContent
+
+  /** A Tab.Pane can display a loading indicator. */
+  loading?: boolean
+}
+
+/**
+ * A tab pane holds the content of a tab.
+ */
+const TabPane = React.forwardRef<HTMLDivElement, TabPaneProps>(function (props, ref) {
+  const { active = true, children, className, content, loading } = props
+
+  const classes = cx(getKeyOnly(active, 'active'), getKeyOnly(loading, 'loading'), 'tab', className)
+  const rest = getUnhandledProps(TabPane, props)
+  const ElementType = getComponentType(props, { defaultAs: Segment })
+
+  const calculatedDefaultProps: any = {}
+
+  if (ElementType === Segment) {
+    calculatedDefaultProps.attached = 'bottom'
+  }
+
+  return (
+    <ElementType {...calculatedDefaultProps} {...rest} className={classes} ref={ref}>
+      {childrenUtils.isNil(children) ? content : children}
+    </ElementType>
+  )
+}) as ForwardRefComponent<TabPaneProps, HTMLDivElement>
+
+TabPane.displayName = 'TabPane'
+TabPane.propTypes = {
+  /** An element type to render as (string or function). */
+  as: PropTypes.elementType,
+
+  /** A tab pane can be active. */
+  active: PropTypes.bool,
+
+  /** Primary content. */
+  children: PropTypes.node,
+
+  /** Additional classes. */
+  className: PropTypes.string,
+
+  /** Shorthand for primary content. */
+  content: customPropTypes.contentShorthand,
+
+  /** A Tab.Pane can display a loading indicator. */
+  loading: PropTypes.bool,
+}
+
+TabPane.create = createShorthandFactory(TabPane, (content) => ({ content }))
+
+export default TabPane

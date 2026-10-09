@@ -42,7 +42,8 @@ Requires Node.js 22 or newer (see `.nvmrc`) and Yarn 1.
 yarn install
 yarn test           # unit tests (Vitest + React Testing Library)
 yarn test:bundles   # builds & checks the single file bundles
-yarn tsd:test       # checks the TypeScript typings
+yarn typecheck      # type checks the sources
+yarn tsd:test       # builds & checks the published typings
 yarn lint           # ESLint
 yarn prettier       # checks formatting
 yarn build          # all builds

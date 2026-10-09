@@ -68,19 +68,31 @@ export const getComponentType = (nodes, componentName) => {
   return nodes.find((node) => isVariableDeclaration(node) && node.name.text === componentName)
 }
 
-export const isForwardRefComponent = (componentType) => {
-  if (isIntersectionType(componentType.type)) {
-    if (Array.isArray(componentType.type.types)) {
-      if (componentType.type.types.length === 2) {
-        const [type] = componentType.type.types
+// The type of a component: "declare const X: Type" in ".d.ts" files or "const X = ... as Type" in
+// TypeScript sources
+const getDeclaredType = (componentType) => {
+  if (componentType.type) return componentType.type
 
-        return type.typeName.text === 'ForwardRefComponent'
+  const { initializer } = componentType
+  return initializer && initializer.kind === SyntaxKind.AsExpression ? initializer.type : undefined
+}
+
+export const isForwardRefComponent = (componentType) => {
+  const type = getDeclaredType(componentType)
+  if (!type) return false
+
+  if (isIntersectionType(type)) {
+    if (Array.isArray(type.types)) {
+      if (type.types.length === 2) {
+        const [firstType] = type.types
+
+        return firstType.typeName?.text === 'ForwardRefComponent'
       }
     }
   }
 
-  if (isTypeReference(componentType.type)) {
-    return componentType.type.typeName.text === 'ForwardRefComponent'
+  if (isTypeReference(type)) {
+    return type.typeName.text === 'ForwardRefComponent'
   }
 
   return false
@@ -99,8 +111,8 @@ export const hasAnySignature = (nodes) => {
   })
 }
 
-// Typings are loaded as strings
-const tsSources = import.meta.glob('/src/**/*.d.ts', {
+// Typings are loaded as strings: ".d.ts" files of JavaScript sources or TypeScript sources
+const tsSources = import.meta.glob('/src/**/*.{d.ts,tsx}', {
   query: '?raw',
   import: 'default',
   eager: true,

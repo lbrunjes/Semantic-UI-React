@@ -10,14 +10,14 @@ export default defineConfig({
     // at runtime (see "getUnhandledProps()"), other plugins from ".babel-preset.js" are only needed
     // for builds.
     babel({
-      include: /[\\/](src|test)[\\/].+\.js$/,
-      presets: [['@babel/preset-react', { runtime: 'classic' }]],
+      include: /[\\/](src|test)[\\/].+\.(js|tsx?)$/,
+      presets: [['@babel/preset-react', { runtime: 'classic' }], '@babel/preset-typescript'],
       plugins: ['transform-react-handled-props'],
     }),
   ],
   resolve: {
     alias: [
-      { find: /^semantic-ui-react$/, replacement: fromRoot('./src/index.js') },
+      { find: /^semantic-ui-react$/, replacement: fromRoot('./src/index') },
       { find: /^src\//, replacement: fromRoot('./src/') },
       { find: /^test\//, replacement: fromRoot('./test/') },
     ],

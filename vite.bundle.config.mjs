@@ -18,21 +18,21 @@ const { presets, plugins, assumptions } = require('./.babel-preset.js')({ env: (
  */
 const bundles = {
   umd: {
-    entry: './src/umd.js',
+    entry: './src/umd',
     fileName: 'semantic-ui-react.min.js',
     format: 'umd',
     outDir: './dist/umd',
     external: ['react', 'react-dom'],
   },
   esm: {
-    entry: './src/index.js',
+    entry: './src/index',
     fileName: 'semantic-ui-react.min.mjs',
     format: 'es',
     outDir: './dist/bundle',
     external: ['react', 'react-dom'],
   },
   standalone: {
-    entry: './scripts/standalone.js',
+    entry: './scripts/standalone',
     fileName: 'semantic-ui-react.standalone.min.js',
     format: 'iife',
     outDir: './dist/standalone',

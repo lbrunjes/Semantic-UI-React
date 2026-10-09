@@ -3,18 +3,18 @@ import _ from 'lodash'
 /**
  * Derives component info from the file layout of `src/`.
  *
- * Components live at `src/<type>s/<Parent>/<Name>.js`, where `<Name>` is either the parent itself
+ * Components live at `src/<type>s/<Parent>/<Name>.(js|tsx)`, where `<Name>` is either the parent itself
  * (i.e. "src/elements/Button/Button.js") or a subcomponent prefixed by its parent's name
  * (i.e. "src/elements/Button/ButtonGroup.js").
  */
 // Only paths are needed, modules are not loaded
 const componentPaths = Object.keys(
-  import.meta.glob('/src/{addons,collections,elements,modules,views}/*/*.js'),
+  import.meta.glob('/src/{addons,collections,elements,modules,views}/*/*.{js,tsx}'),
 )
 
 const getComponentInfo = (componentPath) => {
   const [, , typeDir, dirname, filename] = componentPath.split('/')
-  const filenameWithoutExt = filename.replace(/\.js$/, '')
+  const filenameWithoutExt = filename.replace(/\.(js|tsx)$/, '')
 
   if (!_.startsWith(filenameWithoutExt, dirname)) return null
 

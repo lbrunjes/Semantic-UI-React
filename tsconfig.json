@@ -1,15 +1,19 @@
 {
+  // Type checks the library's sources ("yarn typecheck"), see also:
+  // - "tsconfig.build.json": emits the published typings to "dist/commonjs"
+  // - "tsconfig.typings.json": checks the published typings like a consumer ("yarn tsd:test")
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
     "jsx": "react",
-    "lib": ["dom", "es2015"],
+    "lib": ["dom", "es2022"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "strict": true
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "es2022"
   },
-  "include": [
-    "src/**/*.d.ts"
-  ],
-  "files": [
-    "test/typings.tsx"
-  ]
+  "include": ["src", "types"]
 }

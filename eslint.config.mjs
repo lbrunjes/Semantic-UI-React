@@ -12,10 +12,10 @@ export default tseslint.config(
   },
 
   // ----------------------------------------
-  // JavaScript
+  // JavaScript & TypeScript
   // ----------------------------------------
   {
-    files: ['**/*.js', '**/*.mjs'],
+    files: ['**/*.js', '**/*.mjs', '**/*.ts', '**/*.tsx'],
     extends: [
       js.configs.recommended,
       react.configs.flat.recommended,
@@ -39,7 +39,8 @@ export default tseslint.config(
     rules: {
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-console': 'error',
-      'no-duplicate-imports': 'error',
+      // "import type" of a module that is also imported for values is fine
+      'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
       'no-return-assign': ['error', 'except-parens'],
       'no-unused-vars': ['error', { caughtErrors: 'none' }],
       'no-var': 'error',
@@ -81,7 +82,7 @@ export default tseslint.config(
   // Tests
   // ----------------------------------------
   {
-    files: ['test/**/*.js'],
+    files: ['test/**/*.js', 'test/**/*.tsx'],
     languageOptions: {
       globals: globals.vitest,
     },
@@ -106,6 +107,8 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { caughtErrors: 'none' }],
+      'no-unused-vars': 'off',
     },
   },
 
