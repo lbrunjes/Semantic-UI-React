@@ -1,0 +1,12 @@
+{
+  // Checks the published typings like a consumer would use them, with strict mode
+  "compilerOptions": {
+    "jsx": "react",
+    "lib": ["dom", "es2015"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true
+  },
+  "files": ["test/typings.tsx"]
+}

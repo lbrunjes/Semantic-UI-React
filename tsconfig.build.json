@@ -1,0 +1,12 @@
+{
+  // Emits the published typings ("*.d.ts") of TypeScript sources to "dist/commonjs"
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "dist/commonjs",
+    "rootDir": "src"
+  },
+  "include": ["src", "types"]
+}
